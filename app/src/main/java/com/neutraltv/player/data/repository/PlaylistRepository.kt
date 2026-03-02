@@ -40,6 +40,29 @@ class PlaylistRepository @Inject constructor(
     fun getChannelsByGroup(playlistId: Long, group: String?): Flow<List<ChannelEntity>> =
         channelDao.getChannelsByGroup(playlistId, group)
 
+    fun searchChannels(playlistId: Long, query: String): Flow<List<ChannelEntity>> =
+        channelDao.searchChannels(playlistId, query)
+
+    fun getRecentlyWatched(playlistId: Long, limit: Int = 5): Flow<List<ChannelEntity>> =
+        channelDao.getRecentlyWatched(playlistId, limit)
+
+    suspend fun markChannelWatched(channelId: Long) {
+        withContext(Dispatchers.IO) {
+            channelDao.updateLastWatchedAt(channelId, System.currentTimeMillis())
+        }
+    }
+
+    fun getAllPlaylists(): Flow<List<PlaylistEntity>> = playlistDao.getAll()
+
+    suspend fun switchPlaylist(playlistId: Long) {
+        withContext(Dispatchers.IO) {
+            playlistDao.deactivateAll()
+            playlistDao.activate(playlistId)
+        }
+    }
+
+    suspend fun getPlaylistCount(): Int = playlistDao.getCount()
+
     suspend fun loadPlaylistFromUrl(name: String, url: String): Result<PlaylistEntity> {
         return withContext(Dispatchers.IO) {
             try {
@@ -78,31 +101,33 @@ class PlaylistRepository @Inject constructor(
         url: String? = null,
         filePath: String? = null
     ): Result<PlaylistEntity> {
-        val parsedChannels = m3uParser.parse(content)
-        if (parsedChannels.isEmpty()) {
+        val parseResult = m3uParser.parse(content)
+        if (parseResult.channels.isEmpty()) {
             return Result.failure(Exception("No channels found in playlist"))
         }
 
-        // Delete existing playlists (single playlist mode in Phase 1)
-        playlistDao.deleteAll()
+        // Deactivate other playlists so the new one becomes active
+        playlistDao.deactivateAll()
 
         val playlist = PlaylistEntity(
             name = name,
             url = url,
             filePath = filePath,
             isActive = true,
-            channelCount = parsedChannels.size
+            channelCount = parseResult.channels.size,
+            epgUrl = parseResult.epgUrl
         )
         val playlistId = playlistDao.insert(playlist)
 
-        val channelEntities = parsedChannels.map { parsed ->
+        val channelEntities = parseResult.channels.map { parsed ->
             ChannelEntity(
                 playlistId = playlistId,
                 name = parsed.name,
                 streamUrl = parsed.streamUrl,
                 logoUrl = parsed.logoUrl,
                 groupTitle = parsed.groupTitle,
-                position = parsed.position
+                position = parsed.position,
+                epgChannelId = parsed.tvgId
             )
         }
         channelDao.insertAll(channelEntities)
@@ -114,6 +139,24 @@ class PlaylistRepository @Inject constructor(
         withContext(Dispatchers.IO) {
             val playlist = playlistDao.getActivePlaylistOnce() ?: return@withContext
             playlistDao.deleteById(playlist.id)
+            // Activate the most recent remaining playlist if any
+            val remaining = playlistDao.getMostRecent()
+            if (remaining != null) {
+                playlistDao.activate(remaining.id)
+            }
+        }
+    }
+
+    suspend fun deletePlaylistById(playlistId: Long) {
+        withContext(Dispatchers.IO) {
+            val wasActive = playlistDao.getActivePlaylistOnce()?.id == playlistId
+            playlistDao.deleteById(playlistId)
+            if (wasActive) {
+                val remaining = playlistDao.getMostRecent()
+                if (remaining != null) {
+                    playlistDao.activate(remaining.id)
+                }
+            }
         }
     }
 }

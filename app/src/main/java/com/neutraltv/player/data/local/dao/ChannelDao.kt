@@ -30,4 +30,23 @@ interface ChannelDao {
 
     @Query("DELETE FROM channels WHERE playlistId = :playlistId")
     suspend fun deleteByPlaylistId(playlistId: Long)
+
+    @Query("""
+        SELECT * FROM channels
+        WHERE playlistId = :playlistId AND isHidden = 0
+        AND (name LIKE '%' || :query || '%' OR groupTitle LIKE '%' || :query || '%')
+        ORDER BY position ASC
+    """)
+    fun searchChannels(playlistId: Long, query: String): Flow<List<ChannelEntity>>
+
+    @Query("UPDATE channels SET lastWatchedAt = :timestamp WHERE id = :channelId")
+    suspend fun updateLastWatchedAt(channelId: Long, timestamp: Long)
+
+    @Query("""
+        SELECT * FROM channels
+        WHERE playlistId = :playlistId AND lastWatchedAt IS NOT NULL AND isHidden = 0
+        ORDER BY lastWatchedAt DESC
+        LIMIT :limit
+    """)
+    fun getRecentlyWatched(playlistId: Long, limit: Int = 5): Flow<List<ChannelEntity>>
 }

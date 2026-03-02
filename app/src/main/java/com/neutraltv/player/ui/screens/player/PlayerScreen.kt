@@ -43,8 +43,12 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
+import androidx.compose.ui.res.stringResource
+import androidx.tv.material3.Button
+import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
 import coil.compose.AsyncImage
+import com.neutraltv.player.R
 import com.neutraltv.player.ui.theme.Background
 import com.neutraltv.player.ui.theme.Error
 import com.neutraltv.player.ui.theme.FocusBorder
@@ -90,13 +94,24 @@ fun PlayerScreen(
     DisposableEffect(exoPlayer) {
         val listener = object : Player.Listener {
             override fun onPlayerError(error: PlaybackException) {
-                // Error is visible to user via ExoPlayer's built-in error display
+                viewModel.onPlayerError(error.errorCode)
             }
         }
         exoPlayer.addListener(listener)
         onDispose {
             exoPlayer.removeListener(listener)
             exoPlayer.release()
+        }
+    }
+
+    // Handle retry events
+    LaunchedEffect(Unit) {
+        viewModel.retryEvent.collect {
+            uiState.currentChannel?.let { channel ->
+                exoPlayer.setMediaItem(MediaItem.fromUri(channel.streamUrl))
+                exoPlayer.prepare()
+                viewModel.dismissError()
+            }
         }
     }
 
@@ -145,6 +160,11 @@ fun PlayerScreen(
                             viewModel.toggleControls()
                             true
                         }
+                        KeyEvent.KEYCODE_BOOKMARK,
+                        KeyEvent.KEYCODE_MEDIA_RECORD -> {
+                            viewModel.toggleFavorite()
+                            true
+                        }
                         else -> false
                     }
                 } else {
@@ -175,7 +195,9 @@ fun PlayerScreen(
                     channelNumber = uiState.currentIndex + 1,
                     channelName = channel.name,
                     logoUrl = channel.logoUrl,
-                    groupTitle = channel.groupTitle
+                    groupTitle = channel.groupTitle,
+                    isFavorite = uiState.isFavorite,
+                    currentProgramTitle = uiState.currentProgramTitle
                 )
             }
         }
@@ -197,18 +219,82 @@ fun PlayerScreen(
         }
 
         // Error overlay
-        uiState.error?.let { error ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Background.copy(alpha = 0.8f)),
-                contentAlignment = Alignment.Center
-            ) {
+        if (uiState.showErrorOverlay) {
+            ErrorOverlay(
+                isRetrying = uiState.isRetrying,
+                retryAttempt = uiState.retryAttempt,
+                maxRetries = uiState.maxRetries,
+                errorMessage = uiState.error,
+                onRetry = { viewModel.retryManually() },
+                onSkip = { viewModel.skipToNextChannel() }
+            )
+        }
+    }
+}
+
+@Composable
+private fun ErrorOverlay(
+    isRetrying: Boolean,
+    retryAttempt: Int,
+    maxRetries: Int,
+    errorMessage: String?,
+    onRetry: () -> Unit,
+    onSkip: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Background.copy(alpha = 0.85f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (isRetrying) {
                 Text(
-                    text = error,
+                    text = stringResource(R.string.error_retrying, retryAttempt, maxRetries),
+                    style = JotaPlayerTypography.titleMedium,
+                    color = OnSurface
+                )
+            } else {
+                Text(
+                    text = errorMessage ?: stringResource(R.string.error_unknown),
                     style = JotaPlayerTypography.titleMedium,
                     color = Error
                 )
+                Spacer(modifier = Modifier.height(24.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Button(
+                        onClick = onRetry,
+                        colors = ButtonDefaults.colors(
+                            containerColor = Primary,
+                            contentColor = Background,
+                            focusedContainerColor = FocusBorder,
+                            focusedContentColor = Background
+                        )
+                    ) {
+                        Text(
+                            text = stringResource(R.string.error_retry),
+                            style = JotaPlayerTypography.labelLarge,
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
+                        )
+                    }
+                    Button(
+                        onClick = onSkip,
+                        colors = ButtonDefaults.colors(
+                            containerColor = Surface,
+                            contentColor = OnSurface,
+                            focusedContainerColor = FocusBorder,
+                            focusedContentColor = Background
+                        )
+                    ) {
+                        Text(
+                            text = stringResource(R.string.error_next_channel),
+                            style = JotaPlayerTypography.labelLarge,
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
+                        )
+                    }
+                }
             }
         }
     }
@@ -219,7 +305,9 @@ private fun ChannelInfoOverlay(
     channelNumber: Int,
     channelName: String,
     logoUrl: String?,
-    groupTitle: String?
+    groupTitle: String?,
+    isFavorite: Boolean = false,
+    currentProgramTitle: String? = null
 ) {
     Row(
         modifier = Modifier
@@ -254,16 +342,34 @@ private fun ChannelInfoOverlay(
 
         // Channel info
         Column {
-            Text(
-                text = channelName,
-                style = JotaPlayerTypography.titleMedium,
-                color = OnSurface
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = channelName,
+                    style = JotaPlayerTypography.titleMedium,
+                    color = OnSurface
+                )
+                if (isFavorite) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "\u2605",
+                        style = JotaPlayerTypography.titleMedium,
+                        color = Primary
+                    )
+                }
+            }
             if (groupTitle != null) {
                 Text(
                     text = groupTitle,
                     style = JotaPlayerTypography.labelMedium,
                     color = OnSurfaceVariant
+                )
+            }
+            if (currentProgramTitle != null) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "${stringResource(R.string.epg_now)}: $currentProgramTitle",
+                    style = JotaPlayerTypography.labelMedium,
+                    color = FocusBorder
                 )
             }
         }

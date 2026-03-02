@@ -1,0 +1,105 @@
+package com.neutraltv.player.ui.screens.epg
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.neutraltv.player.data.local.entity.ChannelEntity
+import com.neutraltv.player.data.local.entity.ProgramEntity
+import com.neutraltv.player.data.repository.EpgRepository
+import com.neutraltv.player.data.repository.PlaylistRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+data class EpgUiState(
+    val channels: List<ChannelEntity> = emptyList(),
+    val programs: Map<String, List<ProgramEntity>> = emptyMap(),
+    val isLoading: Boolean = true,
+    val isLoadingEpg: Boolean = false,
+    val epgLoadError: String? = null,
+    val focusedProgram: ProgramEntity? = null,
+    val windowStartTime: Long = 0,
+    val windowEndTime: Long = 0
+)
+
+@HiltViewModel
+class EpgViewModel @Inject constructor(
+    private val playlistRepository: PlaylistRepository,
+    private val epgRepository: EpgRepository
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(EpgUiState())
+    val uiState: StateFlow<EpgUiState> = _uiState
+
+    init {
+        viewModelScope.launch {
+            playlistRepository.getActivePlaylist().collect { playlist ->
+                if (playlist != null) {
+                    loadChannelsAndPrograms(playlist.id, playlist.epgUrl)
+                } else {
+                    _uiState.value = EpgUiState(isLoading = false)
+                }
+            }
+        }
+    }
+
+    private fun loadChannelsAndPrograms(playlistId: Long, epgUrl: String?) {
+        val now = System.currentTimeMillis()
+        val hourMs = 3600_000L
+        val windowStart = now - hourMs     // 1 hour before
+        val windowEnd = now + 2 * hourMs   // 2 hours after
+
+        _uiState.value = _uiState.value.copy(
+            windowStartTime = windowStart,
+            windowEndTime = windowEnd
+        )
+
+        viewModelScope.launch {
+            val channels = playlistRepository.getVisibleChannelsOnce(playlistId)
+                .filter { it.epgChannelId != null }
+
+            _uiState.value = _uiState.value.copy(
+                channels = channels,
+                isLoading = false
+            )
+
+            // Load EPG from network if available and no programs exist
+            if (epgUrl != null) {
+                loadEpgData(playlistId, epgUrl)
+            }
+
+            // Load programs for visible channels
+            val epgChannelIds = channels.mapNotNull { it.epgChannelId }
+            if (epgChannelIds.isNotEmpty()) {
+                epgRepository.getProgramsForChannelsInRange(epgChannelIds, windowStart, windowEnd)
+                    .collect { allPrograms ->
+                        val grouped = allPrograms.groupBy { it.epgChannelId }
+                        _uiState.value = _uiState.value.copy(programs = grouped)
+                    }
+            }
+        }
+    }
+
+    private fun loadEpgData(playlistId: Long, epgUrl: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoadingEpg = true)
+            val result = epgRepository.loadEpg(playlistId, epgUrl)
+            result.fold(
+                onSuccess = {
+                    _uiState.value = _uiState.value.copy(isLoadingEpg = false)
+                },
+                onFailure = { e ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoadingEpg = false,
+                        epgLoadError = e.message
+                    )
+                }
+            )
+        }
+    }
+
+    fun onProgramFocused(program: ProgramEntity?) {
+        _uiState.value = _uiState.value.copy(focusedProgram = program)
+    }
+}

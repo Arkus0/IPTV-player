@@ -26,4 +26,52 @@
     <string name="settings_clear_cache">Limpiar Caché</string>
     <string name="settings_cache_cleared">Caché limpiada</string>
     <string name="about_description">JotaPlayer es un reproductor multimedia neutral. No incluye, indexa ni promociona ningún contenido. Todo el contenido proviene de fuentes externas proporcionadas por el usuario.</string>
+
+    <!-- Navigation -->
+    <string name="back">Volver</string>
+
+    <!-- Multi-playlist -->
+    <string name="add_playlist_title">Agregar Lista</string>
+    <string name="playlist_name_hint">Nombre de la lista</string>
+    <string name="playlists_title">Mis Listas</string>
+    <string name="playlists_add">Agregar Lista</string>
+    <string name="playlists_active">Activa</string>
+    <string name="playlists_no_playlists">No hay listas. Agrega una para comenzar.</string>
+    <string name="playlists_delete_confirm">¿Eliminar la lista \"%s\" y todos sus canales?</string>
+    <string name="playlists_channels_count">%d canales</string>
+    <string name="settings_manage_playlists">Administrar Listas</string>
+    <string name="settings_manage_playlists_desc">Agregar, cambiar o eliminar listas de reproducción</string>
+
+    <!-- Favorites -->
+    <string name="favorites_title">Favoritos</string>
+    <string name="favorites_empty">No tienes canales favoritos</string>
+    <string name="favorites_added">Canal agregado a favoritos</string>
+    <string name="favorites_removed">Canal eliminado de favoritos</string>
+
+    <!-- Recently watched -->
+    <string name="recent_title">Recientes</string>
+    <string name="recent_empty">Aún no has visto ningún canal</string>
+
+    <!-- Home -->
+    <string name="home_epg">Guía EPG</string>
+    <string name="home_favorites">Favoritos</string>
+    <string name="home_change_playlist">Cambiar</string>
+
+    <!-- Search -->
+    <string name="search_hint">Buscar canales…</string>
+    <string name="search_no_results">Sin resultados para \"%s\"</string>
+
+    <!-- Player errors -->
+    <string name="error_network">Error de conexión</string>
+    <string name="error_source">No se puede reproducir esta fuente</string>
+    <string name="error_unknown">Error desconocido</string>
+    <string name="error_retry">Reintentar</string>
+    <string name="error_next_channel">Siguiente Canal</string>
+    <string name="error_retrying">Reintentando… (%d/%d)</string>
+
+    <!-- EPG -->
+    <string name="epg_title">Guía de Programación</string>
+    <string name="epg_now">Ahora</string>
+    <string name="epg_no_data">Sin datos de programación</string>
+    <string name="epg_loading">Cargando guía…</string>
 </resources>
