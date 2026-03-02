@@ -1,0 +1,119 @@
+package com.neutraltv.player.data.repository
+
+import com.neutraltv.player.data.local.dao.ChannelDao
+import com.neutraltv.player.data.local.dao.PlaylistDao
+import com.neutraltv.player.data.local.entity.ChannelEntity
+import com.neutraltv.player.data.local.entity.PlaylistEntity
+import com.neutraltv.player.data.parser.M3uParser
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class PlaylistRepository @Inject constructor(
+    private val playlistDao: PlaylistDao,
+    private val channelDao: ChannelDao,
+    private val m3uParser: M3uParser,
+    private val okHttpClient: OkHttpClient
+) {
+
+    fun getActivePlaylist(): Flow<PlaylistEntity?> = playlistDao.getActivePlaylist()
+
+    suspend fun hasActivePlaylist(): Boolean = playlistDao.hasActivePlaylist()
+
+    fun getVisibleChannels(playlistId: Long): Flow<List<ChannelEntity>> =
+        channelDao.getVisibleChannels(playlistId)
+
+    suspend fun getVisibleChannelsOnce(playlistId: Long): List<ChannelEntity> =
+        channelDao.getVisibleChannelsOnce(playlistId)
+
+    suspend fun getChannelById(channelId: Long): ChannelEntity? =
+        channelDao.getById(channelId)
+
+    fun getGroups(playlistId: Long): Flow<List<String?>> =
+        channelDao.getGroups(playlistId)
+
+    fun getChannelsByGroup(playlistId: Long, group: String?): Flow<List<ChannelEntity>> =
+        channelDao.getChannelsByGroup(playlistId, group)
+
+    suspend fun loadPlaylistFromUrl(name: String, url: String): Result<PlaylistEntity> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val request = Request.Builder().url(url).build()
+                val response = okHttpClient.newCall(request).execute()
+
+                if (!response.isSuccessful) {
+                    return@withContext Result.failure(
+                        Exception("HTTP ${response.code}: ${response.message}")
+                    )
+                }
+
+                val body = response.body?.string()
+                    ?: return@withContext Result.failure(Exception("Empty response"))
+
+                savePlaylist(name, body, url = url)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+    }
+
+    suspend fun loadPlaylistFromContent(name: String, content: String, filePath: String?): Result<PlaylistEntity> {
+        return withContext(Dispatchers.IO) {
+            try {
+                savePlaylist(name, content, filePath = filePath)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+    }
+
+    private suspend fun savePlaylist(
+        name: String,
+        content: String,
+        url: String? = null,
+        filePath: String? = null
+    ): Result<PlaylistEntity> {
+        val parsedChannels = m3uParser.parse(content)
+        if (parsedChannels.isEmpty()) {
+            return Result.failure(Exception("No channels found in playlist"))
+        }
+
+        // Delete existing playlists (single playlist mode in Phase 1)
+        playlistDao.deleteAll()
+
+        val playlist = PlaylistEntity(
+            name = name,
+            url = url,
+            filePath = filePath,
+            isActive = true,
+            channelCount = parsedChannels.size
+        )
+        val playlistId = playlistDao.insert(playlist)
+
+        val channelEntities = parsedChannels.map { parsed ->
+            ChannelEntity(
+                playlistId = playlistId,
+                name = parsed.name,
+                streamUrl = parsed.streamUrl,
+                logoUrl = parsed.logoUrl,
+                groupTitle = parsed.groupTitle,
+                position = parsed.position
+            )
+        }
+        channelDao.insertAll(channelEntities)
+
+        return Result.success(playlist.copy(id = playlistId))
+    }
+
+    suspend fun deleteActivePlaylist() {
+        withContext(Dispatchers.IO) {
+            val playlist = playlistDao.getActivePlaylistOnce() ?: return@withContext
+            playlistDao.deleteById(playlist.id)
+        }
+    }
+}
