@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">JotaPlayer</string>
+    <string name="tv_live">TV en Vivo</string>
+    <string name="settings">Ajustes</string>
+    <string name="onboarding_title">Bienvenido a JotaPlayer</string>
+    <string name="onboarding_subtitle">Ingresa la URL de tu lista M3U para comenzar</string>
+    <string name="onboarding_url_hint">URL de lista M3U</string>
+    <string name="onboarding_load">Cargar Lista</string>
+    <string name="onboarding_load_file">Cargar Archivo Local</string>
+    <string name="loading">Cargando…</string>
+    <string name="error_invalid_url">URL no válida</string>
+    <string name="error_loading_playlist">Error al cargar la lista</string>
+    <string name="error_empty_playlist">La lista no contiene canales</string>
+    <string name="error_no_stream">No se puede reproducir este canal</string>
+    <string name="channel_count">%d canales</string>
+    <string name="no_group">Sin Categoría</string>
+    <string name="player_controls_play">Reproducir</string>
+    <string name="player_controls_pause">Pausar</string>
+    <string name="settings_delete_playlist">Eliminar Lista Actual</string>
+    <string name="settings_delete_confirm">¿Eliminar la lista y todos sus canales?</string>
+    <string name="settings_confirm">Confirmar</string>
+    <string name="settings_cancel">Cancelar</string>
+    <string name="settings_about">Acerca de</string>
+    <string name="settings_version">Versión %s</string>
+    <string name="settings_clear_cache">Limpiar Caché</string>
+    <string name="settings_cache_cleared">Caché limpiada</string>
+    <string name="about_description">JotaPlayer es un reproductor multimedia neutral. No incluye, indexa ni promociona ningún contenido. Todo el contenido proviene de fuentes externas proporcionadas por el usuario.</string>
+</resources>
