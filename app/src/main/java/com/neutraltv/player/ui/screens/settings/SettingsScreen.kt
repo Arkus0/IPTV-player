@@ -45,6 +45,7 @@ import kotlinx.coroutines.launch
 fun SettingsScreen(
     onBack: () -> Unit,
     onPlaylistDeleted: () -> Unit,
+    onNavigateToPlaylists: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -65,6 +66,15 @@ fun SettingsScreen(
         )
 
         Spacer(modifier = Modifier.height(32.dp))
+
+        // Manage playlists
+        SettingsItem(
+            title = stringResource(R.string.settings_manage_playlists),
+            subtitle = stringResource(R.string.settings_manage_playlists_desc),
+            onClick = onNavigateToPlaylists
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Delete playlist
         SettingsItem(

@@ -1,27 +1,39 @@
 package com.neutraltv.player.data.parser
 
+data class M3uParseResult(
+    val channels: List<ParsedChannel>,
+    val epgUrl: String?
+)
+
 data class ParsedChannel(
     val name: String,
     val streamUrl: String,
     val logoUrl: String?,
     val groupTitle: String?,
-    val position: Int
+    val position: Int,
+    val tvgId: String? = null
 )
 
 class M3uParser {
 
-    fun parse(content: String): List<ParsedChannel> {
+    fun parse(content: String): M3uParseResult {
         val lines = content.lines()
-        if (lines.isEmpty()) return emptyList()
+        if (lines.isEmpty()) return M3uParseResult(emptyList(), null)
 
         val channels = mutableListOf<ParsedChannel>()
         var position = 0
         var currentInfo: ExtInfData? = null
+        var epgUrl: String? = null
 
         for (line in lines) {
             val trimmed = line.trim()
             when {
-                trimmed.isEmpty() || trimmed == "#EXTM3U" -> continue
+                trimmed.isEmpty() -> continue
+
+                trimmed.startsWith("#EXTM3U") -> {
+                    epgUrl = extractAttribute(trimmed, "url-tvg")
+                    continue
+                }
 
                 trimmed.startsWith("#EXTINF:") -> {
                     currentInfo = parseExtInf(trimmed)
@@ -37,7 +49,8 @@ class M3uParser {
                                 streamUrl = trimmed,
                                 logoUrl = currentInfo.logoUrl,
                                 groupTitle = currentInfo.groupTitle,
-                                position = position++
+                                position = position++,
+                                tvgId = currentInfo.tvgId
                             )
                         )
                     }
@@ -60,7 +73,7 @@ class M3uParser {
             }
         }
 
-        return channels
+        return M3uParseResult(channels, epgUrl)
     }
 
     private fun parseExtInf(line: String): ExtInfData {
@@ -69,6 +82,7 @@ class M3uParser {
         val logoUrl = extractAttribute(afterPrefix, "tvg-logo")
         val groupTitle = extractAttribute(afterPrefix, "group-title")
         val tvgName = extractAttribute(afterPrefix, "tvg-name")
+        val tvgId = extractAttribute(afterPrefix, "tvg-id")
 
         val displayName = afterPrefix.substringAfterLast(",", "").trim()
         val name = when {
@@ -80,7 +94,8 @@ class M3uParser {
         return ExtInfData(
             name = name,
             logoUrl = logoUrl?.takeIf { it.isNotBlank() },
-            groupTitle = groupTitle?.takeIf { it.isNotBlank() }
+            groupTitle = groupTitle?.takeIf { it.isNotBlank() },
+            tvgId = tvgId?.takeIf { it.isNotBlank() }
         )
     }
 
@@ -99,6 +114,7 @@ class M3uParser {
     private data class ExtInfData(
         val name: String,
         val logoUrl: String?,
-        val groupTitle: String?
+        val groupTitle: String?,
+        val tvgId: String?
     )
 }

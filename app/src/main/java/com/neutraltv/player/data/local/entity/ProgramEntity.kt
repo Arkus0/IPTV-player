@@ -6,7 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "channels",
+    tableName = "programs",
     foreignKeys = [
         ForeignKey(
             entity = PlaylistEntity::class,
@@ -15,18 +15,20 @@ import androidx.room.PrimaryKey
             onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index("playlistId")]
+    indices = [
+        Index("epgChannelId"),
+        Index("playlistId"),
+        Index("startTime")
+    ]
 )
-data class ChannelEntity(
+data class ProgramEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-    val playlistId: Long,
-    val name: String,
-    val streamUrl: String,
-    val logoUrl: String? = null,
-    val groupTitle: String? = null,
-    val position: Int,
-    val isHidden: Boolean = false,
-    val lastWatchedAt: Long? = null,
-    val epgChannelId: String? = null
+    val epgChannelId: String,
+    val title: String,
+    val description: String? = null,
+    val startTime: Long,
+    val endTime: Long,
+    val category: String? = null,
+    val playlistId: Long
 )

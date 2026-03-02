@@ -12,5 +12,6 @@ data class PlaylistEntity(
     val filePath: String? = null,
     val isActive: Boolean = true,
     val channelCount: Int = 0,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val epgUrl: String? = null
 )

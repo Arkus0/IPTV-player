@@ -33,6 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
+import androidx.activity.compose.BackHandler
 import com.neutraltv.player.R
 import com.neutraltv.player.ui.components.LoadingIndicator
 import com.neutraltv.player.ui.theme.Background
@@ -47,10 +48,16 @@ import com.neutraltv.player.ui.theme.Surface
 @Composable
 fun OnboardingScreen(
     onPlaylistLoaded: () -> Unit,
+    showBackButton: Boolean = false,
+    onBack: (() -> Unit)? = null,
     viewModel: OnboardingViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+
+    if (showBackButton && onBack != null) {
+        BackHandler { onBack() }
+    }
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -84,8 +91,32 @@ fun OnboardingScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        if (showBackButton && onBack != null) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Button(
+                    onClick = { onBack() },
+                    colors = ButtonDefaults.colors(
+                        containerColor = Surface,
+                        contentColor = OnSurface,
+                        focusedContainerColor = FocusBorder,
+                        focusedContentColor = Background
+                    )
+                ) {
+                    Text(
+                        text = stringResource(R.string.back),
+                        style = JotaPlayerTypography.labelLarge,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
         Text(
-            text = stringResource(R.string.onboarding_title),
+            text = if (showBackButton) stringResource(R.string.add_playlist_title) else stringResource(R.string.onboarding_title),
             style = JotaPlayerTypography.headlineMedium,
             color = Primary
         )
@@ -98,7 +129,37 @@ fun OnboardingScreen(
             color = OnSurfaceVariant
         )
 
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(32.dp))
+
+        OutlinedTextField(
+            value = uiState.name,
+            onValueChange = viewModel::onNameChanged,
+            label = {
+                Text(
+                    text = stringResource(R.string.playlist_name_hint),
+                    color = OnSurfaceVariant
+                )
+            },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            textStyle = JotaPlayerTypography.bodyLarge.copy(color = OnSurface),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next
+            ),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = FocusBorder,
+                unfocusedBorderColor = OnSurfaceVariant,
+                cursorColor = Primary,
+                focusedLabelColor = FocusBorder,
+                unfocusedLabelColor = OnSurfaceVariant,
+                focusedContainerColor = Background,
+                unfocusedContainerColor = Background
+            ),
+            shape = RoundedCornerShape(8.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = uiState.url,

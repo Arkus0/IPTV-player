@@ -29,4 +29,22 @@ interface PlaylistDao {
 
     @Query("DELETE FROM playlists")
     suspend fun deleteAll()
+
+    @Query("SELECT * FROM playlists ORDER BY createdAt DESC")
+    fun getAll(): Flow<List<PlaylistEntity>>
+
+    @Query("UPDATE playlists SET isActive = 0")
+    suspend fun deactivateAll()
+
+    @Query("UPDATE playlists SET isActive = 1 WHERE id = :playlistId")
+    suspend fun activate(playlistId: Long)
+
+    @Query("UPDATE playlists SET epgUrl = :epgUrl WHERE id = :playlistId")
+    suspend fun updateEpgUrl(playlistId: Long, epgUrl: String?)
+
+    @Query("SELECT COUNT(*) FROM playlists")
+    suspend fun getCount(): Int
+
+    @Query("SELECT * FROM playlists ORDER BY createdAt DESC LIMIT 1")
+    suspend fun getMostRecent(): PlaylistEntity?
 }

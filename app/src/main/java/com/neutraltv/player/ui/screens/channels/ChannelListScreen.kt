@@ -16,6 +16,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -23,7 +27,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -36,10 +42,12 @@ import androidx.tv.material3.Text
 import coil.compose.AsyncImage
 import com.neutraltv.player.R
 import com.neutraltv.player.ui.components.LoadingIndicator
+import com.neutraltv.player.ui.theme.Background
 import com.neutraltv.player.ui.theme.FocusBorder
 import com.neutraltv.player.ui.theme.JotaPlayerTypography
 import com.neutraltv.player.ui.theme.OnSurfaceVariant
 import com.neutraltv.player.ui.theme.Primary
+import com.neutraltv.player.ui.theme.OnSurface
 import com.neutraltv.player.ui.theme.Surface as SurfaceColor
 import com.neutraltv.player.ui.theme.SurfaceVariant
 
@@ -50,16 +58,23 @@ fun ChannelListScreen(
     viewModel: ChannelListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val focusManager = LocalFocusManager.current
 
-    BackHandler { onBack() }
+    BackHandler {
+        if (uiState.isSearchActive) {
+            viewModel.toggleSearch()
+        } else {
+            onBack()
+        }
+    }
 
     Row(
         modifier = Modifier
             .fillMaxSize()
             .padding(start = 24.dp, top = 24.dp, bottom = 24.dp)
     ) {
-        // Groups sidebar
-        if (uiState.groups.size > 1) {
+        // Groups sidebar (hidden during search)
+        if (uiState.groups.size > 1 && !uiState.isSearchActive) {
             GroupsSidebar(
                 groups = uiState.groups,
                 selectedGroup = uiState.selectedGroup,
@@ -79,18 +94,83 @@ fun ChannelListScreen(
                 .fillMaxHeight()
                 .padding(end = 24.dp)
         ) {
-            Text(
-                text = uiState.selectedGroup ?: stringResource(R.string.tv_live),
-                style = JotaPlayerTypography.titleLarge,
-                color = Primary
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = stringResource(R.string.channel_count, uiState.channels.size),
-                style = JotaPlayerTypography.labelMedium,
-                color = OnSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+            // Search bar
+            if (uiState.isSearchActive) {
+                OutlinedTextField(
+                    value = uiState.searchQuery,
+                    onValueChange = viewModel::onSearchQueryChanged,
+                    label = {
+                        Text(
+                            text = stringResource(R.string.search_hint),
+                            color = OnSurfaceVariant
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    textStyle = JotaPlayerTypography.bodyLarge.copy(color = OnSurface),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = FocusBorder,
+                        unfocusedBorderColor = OnSurfaceVariant,
+                        cursorColor = Primary,
+                        focusedLabelColor = FocusBorder,
+                        unfocusedLabelColor = OnSurfaceVariant,
+                        focusedContainerColor = Background,
+                        unfocusedContainerColor = Background
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = if (uiState.isSearchActive && uiState.searchQuery.isNotBlank())
+                            stringResource(R.string.channel_count, uiState.channels.size)
+                        else
+                            uiState.selectedGroup ?: stringResource(R.string.tv_live),
+                        style = JotaPlayerTypography.titleLarge,
+                        color = Primary
+                    )
+                    if (!uiState.isSearchActive) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(R.string.channel_count, uiState.channels.size),
+                            style = JotaPlayerTypography.labelMedium,
+                            color = OnSurfaceVariant
+                        )
+                    }
+                }
+                // Search toggle button
+                Surface(
+                    onClick = { viewModel.toggleSearch() },
+                    shape = ClickableSurfaceDefaults.shape(shape = RoundedCornerShape(8.dp)),
+                    colors = ClickableSurfaceDefaults.colors(
+                        containerColor = if (uiState.isSearchActive) SurfaceVariant else SurfaceColor,
+                        focusedContainerColor = SurfaceVariant,
+                        pressedContainerColor = SurfaceVariant
+                    ),
+                    border = ClickableSurfaceDefaults.border(
+                        focusedBorder = Border(
+                            border = BorderStroke(2.dp, FocusBorder),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                    )
+                ) {
+                    Text(
+                        text = if (uiState.isSearchActive) "\u2716" else "\uD83D\uDD0D",
+                        style = JotaPlayerTypography.titleMedium,
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
 
             if (uiState.isLoading) {
                 LoadingIndicator(message = stringResource(R.string.loading))
@@ -108,6 +188,7 @@ fun ChannelListScreen(
                             number = channel.position + 1,
                             logoUrl = channel.logoUrl,
                             groupTitle = channel.groupTitle,
+                            isFavorite = channel.id in uiState.favoriteIds,
                             onClick = { onChannelSelected(channel.id) }
                         )
                     }
@@ -191,6 +272,7 @@ private fun ChannelItem(
     number: Int,
     logoUrl: String?,
     groupTitle: String?,
+    isFavorite: Boolean = false,
     onClick: () -> Unit
 ) {
     Surface(
@@ -255,6 +337,15 @@ private fun ChannelItem(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
+            }
+
+            // Favorite indicator
+            if (isFavorite) {
+                Text(
+                    text = "\u2605",
+                    style = JotaPlayerTypography.titleMedium,
+                    color = Primary
+                )
             }
         }
     }
