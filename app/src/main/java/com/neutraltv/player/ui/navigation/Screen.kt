@@ -10,6 +10,7 @@ sealed class Screen(val route: String) {
     data object Playlists : Screen("playlists")
     data object Favorites : Screen("favorites")
     data object Epg : Screen("epg")
+    data object Vod : Screen("vod")
 
     data object Player : Screen("player/{channelId}") {
         fun createRoute(channelId: Long): String = "player/$channelId"

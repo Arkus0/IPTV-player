@@ -18,7 +18,7 @@ import com.neutraltv.player.data.local.entity.ProgramEntity
         FavoriteEntity::class,
         ProgramEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {

@@ -42,3 +42,10 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
         db.execSQL("CREATE INDEX IF NOT EXISTS index_programs_startTime ON programs(startTime)")
     }
 }
+
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE channels ADD COLUMN channelType TEXT NOT NULL DEFAULT 'live'")
+        db.execSQL("ALTER TABLE channels ADD COLUMN vodProgress INTEGER NOT NULL DEFAULT 0")
+    }
+}

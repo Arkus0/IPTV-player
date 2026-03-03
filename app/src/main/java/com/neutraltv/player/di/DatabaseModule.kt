@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.neutraltv.player.data.local.AppDatabase
 import com.neutraltv.player.data.local.MIGRATION_1_2
+import com.neutraltv.player.data.local.MIGRATION_2_3
 import com.neutraltv.player.data.local.dao.ChannelDao
 import com.neutraltv.player.data.local.dao.FavoriteDao
 import com.neutraltv.player.data.local.dao.PlaylistDao
@@ -27,7 +28,7 @@ object DatabaseModule {
             AppDatabase::class.java,
             "jotaplayer.db"
         )
-            .addMigrations(MIGRATION_1_2)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
             .build()
     }
 

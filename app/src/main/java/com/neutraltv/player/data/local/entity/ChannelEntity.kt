@@ -28,5 +28,7 @@ data class ChannelEntity(
     val position: Int,
     val isHidden: Boolean = false,
     val lastWatchedAt: Long? = null,
-    val epgChannelId: String? = null
+    val epgChannelId: String? = null,
+    val channelType: String = "live",
+    val vodProgress: Long = 0
 )

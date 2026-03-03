@@ -127,7 +127,8 @@ class PlaylistRepository @Inject constructor(
                 logoUrl = parsed.logoUrl,
                 groupTitle = parsed.groupTitle,
                 position = parsed.position,
-                epgChannelId = parsed.tvgId
+                epgChannelId = parsed.tvgId,
+                channelType = parsed.channelType
             )
         }
         channelDao.insertAll(channelEntities)
@@ -144,6 +145,28 @@ class PlaylistRepository @Inject constructor(
             if (remaining != null) {
                 playlistDao.activate(remaining.id)
             }
+        }
+    }
+
+    // VOD methods
+    fun getVodChannels(playlistId: Long): Flow<List<ChannelEntity>> =
+        channelDao.getVodChannels(playlistId)
+
+    suspend fun getVodCount(playlistId: Long): Int =
+        channelDao.getVodCount(playlistId)
+
+    suspend fun getVodGroups(playlistId: Long): List<String?> =
+        channelDao.getVodGroups(playlistId)
+
+    suspend fun getVodByGroup(playlistId: Long, group: String?): List<ChannelEntity> =
+        channelDao.getVodByGroup(playlistId, group)
+
+    suspend fun searchVodChannels(playlistId: Long, query: String): List<ChannelEntity> =
+        channelDao.searchVodChannels(playlistId, query)
+
+    suspend fun saveVodProgress(channelId: Long, progress: Long) {
+        withContext(Dispatchers.IO) {
+            channelDao.updateVodProgress(channelId, progress)
         }
     }
 
