@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -23,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -46,6 +47,7 @@ fun HomeScreen(
     onNavigateToPlaylists: () -> Unit,
     onNavigateToFavorites: () -> Unit,
     onNavigateToEpg: () -> Unit,
+    onNavigateToVod: () -> Unit,
     onNavigateToPlayer: (Long) -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -86,8 +88,7 @@ fun HomeScreen(
 
             FocusableCard(
                 onClick = onNavigateToPlaylists,
-                modifier = Modifier.size(width = 140.dp, height = 44.dp),
-                shape = RoundedCornerShape(22.dp)
+                modifier = Modifier.size(width = 140.dp, height = 44.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxSize(),
@@ -153,6 +154,14 @@ fun HomeScreen(
                 onClick = onNavigateToChannels,
                 modifier = Modifier.weight(1f).height(140.dp)
             )
+            if (uiState.vodCount > 0) {
+                HomeMenuItem(
+                    title = stringResource(R.string.vod_title),
+                    icon = "\uD83C\uDFAC",
+                    onClick = onNavigateToVod,
+                    modifier = Modifier.weight(1f).height(140.dp)
+                )
+            }
             HomeMenuItem(
                 title = stringResource(R.string.home_favorites),
                 icon = "\u2605",
@@ -201,9 +210,12 @@ private fun ChannelCard(
     channel: ChannelEntity,
     onClick: () -> Unit
 ) {
+    val desc = "Canal: ${channel.name}" + (channel.groupTitle?.let { ", grupo: $it" } ?: "")
     FocusableCard(
         onClick = onClick,
-        modifier = Modifier.size(width = 180.dp, height = 100.dp)
+        modifier = Modifier
+            .size(width = 180.dp, height = 100.dp)
+            .semantics { contentDescription = desc }
     ) {
         Row(
             modifier = Modifier
@@ -252,7 +264,7 @@ private fun HomeMenuItem(
 ) {
     FocusableCard(
         onClick = onClick,
-        modifier = modifier
+        modifier = modifier.semantics { contentDescription = "Abrir $title" }
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),

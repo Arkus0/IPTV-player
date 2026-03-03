@@ -13,19 +13,19 @@ interface ChannelDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(channels: List<ChannelEntity>)
 
-    @Query("SELECT * FROM channels WHERE playlistId = :playlistId AND isHidden = 0 ORDER BY position ASC")
+    @Query("SELECT * FROM channels WHERE playlistId = :playlistId AND isHidden = 0 AND channelType = 'live' ORDER BY position ASC")
     fun getVisibleChannels(playlistId: Long): Flow<List<ChannelEntity>>
 
-    @Query("SELECT * FROM channels WHERE playlistId = :playlistId AND isHidden = 0 ORDER BY position ASC")
+    @Query("SELECT * FROM channels WHERE playlistId = :playlistId AND isHidden = 0 AND channelType = 'live' ORDER BY position ASC")
     suspend fun getVisibleChannelsOnce(playlistId: Long): List<ChannelEntity>
 
     @Query("SELECT * FROM channels WHERE id = :channelId")
     suspend fun getById(channelId: Long): ChannelEntity?
 
-    @Query("SELECT DISTINCT groupTitle FROM channels WHERE playlistId = :playlistId AND isHidden = 0 ORDER BY groupTitle ASC")
+    @Query("SELECT DISTINCT groupTitle FROM channels WHERE playlistId = :playlistId AND isHidden = 0 AND channelType = 'live' ORDER BY groupTitle ASC")
     fun getGroups(playlistId: Long): Flow<List<String?>>
 
-    @Query("SELECT * FROM channels WHERE playlistId = :playlistId AND isHidden = 0 AND (groupTitle = :group OR (:group IS NULL AND groupTitle IS NULL)) ORDER BY position ASC")
+    @Query("SELECT * FROM channels WHERE playlistId = :playlistId AND isHidden = 0 AND channelType = 'live' AND (groupTitle = :group OR (:group IS NULL AND groupTitle IS NULL)) ORDER BY position ASC")
     fun getChannelsByGroup(playlistId: Long, group: String?): Flow<List<ChannelEntity>>
 
     @Query("DELETE FROM channels WHERE playlistId = :playlistId")
@@ -33,7 +33,7 @@ interface ChannelDao {
 
     @Query("""
         SELECT * FROM channels
-        WHERE playlistId = :playlistId AND isHidden = 0
+        WHERE playlistId = :playlistId AND isHidden = 0 AND channelType = 'live'
         AND (name LIKE '%' || :query || '%' OR groupTitle LIKE '%' || :query || '%')
         ORDER BY position ASC
     """)
@@ -49,4 +49,28 @@ interface ChannelDao {
         LIMIT :limit
     """)
     fun getRecentlyWatched(playlistId: Long, limit: Int = 5): Flow<List<ChannelEntity>>
+
+    // VOD queries
+    @Query("SELECT * FROM channels WHERE playlistId = :playlistId AND isHidden = 0 AND channelType = 'vod' ORDER BY position ASC")
+    fun getVodChannels(playlistId: Long): Flow<List<ChannelEntity>>
+
+    @Query("SELECT COUNT(*) FROM channels WHERE playlistId = :playlistId AND channelType = 'vod'")
+    suspend fun getVodCount(playlistId: Long): Int
+
+    @Query("SELECT DISTINCT groupTitle FROM channels WHERE playlistId = :playlistId AND isHidden = 0 AND channelType = 'vod' ORDER BY groupTitle ASC")
+    suspend fun getVodGroups(playlistId: Long): List<String?>
+
+    @Query("SELECT * FROM channels WHERE playlistId = :playlistId AND isHidden = 0 AND channelType = 'vod' AND (groupTitle = :group OR (:group IS NULL AND groupTitle IS NULL)) ORDER BY position ASC")
+    suspend fun getVodByGroup(playlistId: Long, group: String?): List<ChannelEntity>
+
+    @Query("""
+        SELECT * FROM channels
+        WHERE playlistId = :playlistId AND isHidden = 0 AND channelType = 'vod'
+        AND (name LIKE '%' || :query || '%' OR groupTitle LIKE '%' || :query || '%')
+        ORDER BY position ASC
+    """)
+    suspend fun searchVodChannels(playlistId: Long, query: String): List<ChannelEntity>
+
+    @Query("UPDATE channels SET vodProgress = :progress WHERE id = :channelId")
+    suspend fun updateVodProgress(channelId: Long, progress: Long)
 }

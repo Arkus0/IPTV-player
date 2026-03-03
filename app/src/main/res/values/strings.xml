@@ -74,4 +74,36 @@
     <string name="epg_now">Ahora</string>
     <string name="epg_no_data">Sin datos de programación</string>
     <string name="epg_loading">Cargando guía…</string>
+
+    <!-- VOD -->
+    <string name="vod_title">VOD</string>
+    <string name="vod_empty">No hay contenido VOD en esta lista</string>
+    <string name="vod_search_hint">Buscar en VOD…</string>
+    <string name="vod_resume">Continuar</string>
+    <string name="vod_categories">Categorías</string>
+    <string name="vod_all">Todos</string>
+
+    <!-- Timeshift -->
+    <string name="timeshift_live">EN VIVO</string>
+    <string name="timeshift_paused">PAUSADO</string>
+    <string name="timeshift_behind">-%1$dm %2$ds</string>
+    <string name="timeshift_go_live">Ir a EN VIVO</string>
+
+    <!-- Themes -->
+    <string name="theme_title">Tema</string>
+    <string name="theme_purple_dark">Morado Oscuro</string>
+    <string name="theme_blue_dark">Azul Oscuro</string>
+    <string name="theme_oled_black">OLED Negro</string>
+    <string name="theme_light">Claro</string>
+
+    <!-- Accessibility -->
+    <string name="accessibility_title">Accesibilidad</string>
+    <string name="font_size_normal">Normal</string>
+    <string name="font_size_large">Grande</string>
+    <string name="font_size_extra_large">Extra Grande</string>
+
+    <!-- Settings new -->
+    <string name="settings_theme">Tema de la aplicación</string>
+    <string name="settings_font_size">Tamaño de fuente</string>
+    <string name="settings_accessibility">Accesibilidad</string>
 </resources>

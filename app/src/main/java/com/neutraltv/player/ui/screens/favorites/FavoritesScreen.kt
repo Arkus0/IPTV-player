@@ -23,6 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -112,9 +114,12 @@ private fun FavoriteChannelItem(
     groupTitle: String?,
     onClick: () -> Unit
 ) {
+    val desc = "Favorito: $name" + (groupTitle?.let { ", grupo: $it" } ?: "")
     Surface(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics { contentDescription = desc },
         shape = ClickableSurfaceDefaults.shape(
             shape = RoundedCornerShape(8.dp)
         ),

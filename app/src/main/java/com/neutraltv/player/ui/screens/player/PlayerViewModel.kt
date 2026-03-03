@@ -31,7 +31,16 @@ data class PlayerUiState(
     val maxRetries: Int = 3,
     val errorType: StreamErrorType? = null,
     val showErrorOverlay: Boolean = false,
-    val currentProgramTitle: String? = null
+    val currentProgramTitle: String? = null,
+    // Timeshift
+    val isLive: Boolean = true,
+    val isTimeshifted: Boolean = false,
+    val liveOffsetMs: Long = 0,
+    val isPlaying: Boolean = true,
+    // VOD
+    val isVod: Boolean = false,
+    val vodProgress: Long = 0,
+    val vodDuration: Long = 0
 )
 
 @HiltViewModel
@@ -57,6 +66,7 @@ class PlayerViewModel @Inject constructor(
                 return@launch
             }
 
+            val isVod = channel.channelType == "vod"
             val allChannels = repository.getVisibleChannelsOnce(channel.playlistId)
             val index = allChannels.indexOfFirst { it.id == channelId }.coerceAtLeast(0)
 
@@ -65,12 +75,15 @@ class PlayerViewModel @Inject constructor(
                 currentChannel = channel,
                 channelList = allChannels,
                 currentIndex = index,
-                showChannelInfo = true
+                showChannelInfo = true,
+                isVod = isVod,
+                isLive = !isVod,
+                vodProgress = if (isVod) channel.vodProgress else 0
             )
 
             repository.markChannelWatched(channelId)
             observeFavoriteStatus(channelId)
-            observeCurrentProgram(channel)
+            if (!isVod) observeCurrentProgram(channel)
         }
     }
 
@@ -243,5 +256,52 @@ class PlayerViewModel @Inject constructor(
 
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
+    }
+
+    // Timeshift methods
+    fun togglePlayPause() {
+        _uiState.value = _uiState.value.copy(
+            isPlaying = !_uiState.value.isPlaying
+        )
+    }
+
+    fun updatePlayingState(isPlaying: Boolean) {
+        val wasPlaying = _uiState.value.isPlaying
+        _uiState.value = _uiState.value.copy(
+            isPlaying = isPlaying,
+            isTimeshifted = if (!_uiState.value.isVod && !isPlaying) true else _uiState.value.isTimeshifted
+        )
+    }
+
+    fun updateLiveOffset(offsetMs: Long) {
+        val isAtLive = offsetMs < 3000 // within 3s of live edge
+        _uiState.value = _uiState.value.copy(
+            liveOffsetMs = offsetMs,
+            isTimeshifted = !isAtLive && !_uiState.value.isVod
+        )
+    }
+
+    fun seekToLive() {
+        _uiState.value = _uiState.value.copy(
+            isTimeshifted = false,
+            liveOffsetMs = 0
+        )
+    }
+
+    // VOD methods
+    fun updateVodProgress(position: Long, duration: Long) {
+        _uiState.value = _uiState.value.copy(
+            vodProgress = position,
+            vodDuration = duration
+        )
+    }
+
+    fun saveVodProgress() {
+        val state = _uiState.value
+        val channelId = state.currentChannel?.id ?: return
+        if (!state.isVod || state.vodProgress <= 0) return
+        viewModelScope.launch {
+            repository.saveVodProgress(channelId, state.vodProgress)
+        }
     }
 }

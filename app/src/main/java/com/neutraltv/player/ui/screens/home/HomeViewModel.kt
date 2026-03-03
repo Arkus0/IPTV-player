@@ -16,6 +16,7 @@ data class HomeUiState(
     val playlist: PlaylistEntity? = null,
     val recentChannels: List<ChannelEntity> = emptyList(),
     val favoriteChannels: List<ChannelEntity> = emptyList(),
+    val vodCount: Int = 0,
     val isLoading: Boolean = true
 )
 
@@ -38,6 +39,7 @@ class HomeViewModel @Inject constructor(
                 if (playlist != null) {
                     loadRecentChannels(playlist.id)
                     loadFavoriteChannels(playlist.id)
+                    loadVodCount(playlist.id)
                 }
             }
         }
@@ -56,6 +58,13 @@ class HomeViewModel @Inject constructor(
             favoriteRepository.getFavoriteChannels(playlistId).collect { channels ->
                 _uiState.value = _uiState.value.copy(favoriteChannels = channels)
             }
+        }
+    }
+
+    private fun loadVodCount(playlistId: Long) {
+        viewModelScope.launch {
+            val count = repository.getVodCount(playlistId)
+            _uiState.value = _uiState.value.copy(vodCount = count)
         }
     }
 }

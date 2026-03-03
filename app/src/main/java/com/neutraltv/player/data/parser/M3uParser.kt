@@ -11,7 +11,8 @@ data class ParsedChannel(
     val logoUrl: String?,
     val groupTitle: String?,
     val position: Int,
-    val tvgId: String? = null
+    val tvgId: String? = null,
+    val channelType: String = "live"
 )
 
 class M3uParser {
@@ -50,7 +51,8 @@ class M3uParser {
                                 logoUrl = currentInfo.logoUrl,
                                 groupTitle = currentInfo.groupTitle,
                                 position = position++,
-                                tvgId = currentInfo.tvgId
+                                tvgId = currentInfo.tvgId,
+                                channelType = classifyChannel(trimmed, currentInfo.groupTitle)
                             )
                         )
                     }
@@ -65,7 +67,8 @@ class M3uParser {
                                 streamUrl = trimmed,
                                 logoUrl = null,
                                 groupTitle = null,
-                                position = position++
+                                position = position++,
+                                channelType = classifyChannel(trimmed, null)
                             )
                         )
                     }
@@ -102,6 +105,22 @@ class M3uParser {
     private fun extractAttribute(line: String, attribute: String): String? {
         val pattern = """$attribute="([^"]*)"""".toRegex()
         return pattern.find(line)?.groupValues?.get(1)
+    }
+
+    private fun classifyChannel(streamUrl: String, groupTitle: String?): String {
+        val vodExtensions = listOf(".mp4", ".mkv", ".avi", ".mov", ".flv")
+        val urlLower = streamUrl.lowercase()
+        if (vodExtensions.any { urlLower.substringBefore("?").endsWith(it) }) {
+            return "vod"
+        }
+
+        val vodKeywords = listOf("vod", "movie", "películas", "peliculas", "series", "film")
+        val groupLower = groupTitle?.lowercase() ?: ""
+        if (vodKeywords.any { groupLower.contains(it) }) {
+            return "vod"
+        }
+
+        return "live"
     }
 
     private fun isValidUrl(url: String): Boolean {

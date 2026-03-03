@@ -94,6 +94,9 @@ dependencies {
     // Image Loading
     implementation(libs.coil.compose)
 
+    // DataStore
+    implementation(libs.datastore.preferences)
+
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.truth)
