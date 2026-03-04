@@ -9,6 +9,10 @@ import com.neutraltv.player.data.repository.EpgRepository
 import com.neutraltv.player.data.repository.FavoriteRepository
 import com.neutraltv.player.data.repository.PlaylistRepository
 import com.neutraltv.player.data.repository.XtreamRepository
+import com.neutraltv.player.server.PlaybackBridge
+import com.neutraltv.core.model.CommandType
+import com.neutraltv.core.model.PlaybackStateDto
+import com.neutraltv.core.model.TransferDirection
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -46,7 +50,11 @@ data class PlayerUiState(
     val vodDuration: Long = 0,
     // Episode
     val isEpisode: Boolean = false,
-    val episodeId: Long = 0
+    val episodeId: Long = 0,
+    // Companion
+    val companionConnected: Boolean = false,
+    val showTransferOverlay: Boolean = false,
+    val transferDirection: TransferDirection? = null
 )
 
 @HiltViewModel
@@ -56,7 +64,8 @@ class PlayerViewModel @Inject constructor(
     private val epgRepository: EpgRepository,
     private val retryManager: StreamRetryManager,
     private val preferencesRepository: PreferencesRepository,
-    private val xtreamRepository: XtreamRepository
+    private val xtreamRepository: XtreamRepository,
+    private val playbackBridge: PlaybackBridge
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PlayerUiState())
@@ -65,6 +74,81 @@ class PlayerViewModel @Inject constructor(
     // Event to trigger player retry from the UI
     private val _retryEvent = MutableSharedFlow<Unit>()
     val retryEvent: SharedFlow<Unit> = _retryEvent
+
+    init {
+        // Observe remote commands from companion mobile app
+        viewModelScope.launch {
+            playbackBridge.remoteCommands.collect { command ->
+                when (command.type) {
+                    CommandType.CHANNEL_UP -> zapNext()
+                    CommandType.CHANNEL_DOWN -> zapPrevious()
+                    CommandType.TOGGLE_PLAY_PAUSE -> togglePlayPause()
+                    CommandType.TOGGLE_FAVORITE -> toggleFavorite()
+                    CommandType.PLAY_CHANNEL -> command.channelId?.let { loadChannel(it) }
+                    CommandType.SEEK_FORWARD -> { /* handled by PlayerScreen */ }
+                    CommandType.SEEK_BACKWARD -> { /* handled by PlayerScreen */ }
+                    CommandType.BACK -> hideControls()
+                    CommandType.OK -> toggleControls()
+                    else -> { /* volume handled at system level */ }
+                }
+            }
+        }
+
+        // Observe transfer requests from companion mobile app
+        viewModelScope.launch {
+            playbackBridge.transferRequests.collect { request ->
+                when (request.direction) {
+                    TransferDirection.TO_TV -> {
+                        // Mobile sends playback to TV
+                        request.playbackState?.let { state ->
+                            _uiState.value = _uiState.value.copy(
+                                showTransferOverlay = true,
+                                transferDirection = TransferDirection.TO_TV
+                            )
+                            // Load the channel at the specified position
+                            loadChannel(state.channelId)
+                        }
+                    }
+                    TransferDirection.TO_MOBILE -> {
+                        // TV sends playback to mobile — show overlay then stop
+                        _uiState.value = _uiState.value.copy(
+                            showTransferOverlay = true,
+                            transferDirection = TransferDirection.TO_MOBILE
+                        )
+                    }
+                }
+            }
+        }
+
+        // Publish playback state to companion bridge
+        viewModelScope.launch {
+            uiState.collect { state ->
+                state.currentChannel?.let { channel ->
+                    playbackBridge.updatePlaybackState(
+                        PlaybackStateDto(
+                            channelId = channel.id,
+                            channelName = channel.name,
+                            streamUrl = channel.streamUrl,
+                            logoUrl = channel.logoUrl,
+                            positionMs = state.vodProgress,
+                            durationMs = state.vodDuration,
+                            isVod = state.isVod,
+                            isEpisode = state.isEpisode,
+                            episodeId = state.episodeId,
+                            isPlaying = state.isPlaying
+                        )
+                    )
+                }
+            }
+        }
+
+        // Track companion connection status
+        viewModelScope.launch {
+            playbackBridge.connectedClients.collect { count ->
+                _uiState.value = _uiState.value.copy(companionConnected = count > 0)
+            }
+        }
+    }
 
     fun loadChannel(channelId: Long) {
         viewModelScope.launch {
@@ -338,6 +422,13 @@ class PlayerViewModel @Inject constructor(
         viewModelScope.launch {
             repository.saveVodProgress(channelId, state.vodProgress)
         }
+    }
+
+    fun dismissTransferOverlay() {
+        _uiState.value = _uiState.value.copy(
+            showTransferOverlay = false,
+            transferDirection = null
+        )
     }
 
     fun loadEpisode(episodeId: Long) {

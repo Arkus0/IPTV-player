@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">JuanPlayer Móvil</string>
+    <string name="tab_remote">Remoto</string>
+    <string name="tab_channels">Canales</string>
+    <string name="tab_favorites">Favoritos</string>
+    <string name="tab_settings">Ajustes</string>
+    <string name="discover_title">Buscar TV</string>
+    <string name="discover_scanning">Buscando dispositivos en la red…</string>
+    <string name="discover_no_devices">No se encontraron dispositivos</string>
+    <string name="discover_connect">Conectar</string>
+    <string name="remote_title">Control Remoto</string>
+    <string name="remote_not_connected">No conectado a la TV</string>
+    <string name="remote_connected_to">Conectado a %s</string>
+    <string name="remote_now_playing">Reproduciendo: %s</string>
+    <string name="transfer_to_tv">Enviar a TV</string>
+    <string name="transfer_to_mobile">Traer a Móvil</string>
+    <string name="transfer_sending">Enviando a TV…</string>
+    <string name="transfer_receiving">Recibiendo de TV…</string>
+    <string name="transfer_switch_mode">Switch Mode</string>
+    <string name="channels_title">Canales</string>
+    <string name="channels_no_playlist">Conéctate a la TV para ver canales</string>
+    <string name="favorites_title">Favoritos</string>
+    <string name="favorites_empty">No tienes favoritos</string>
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_connection">Conexión TV</string>
+    <string name="settings_disconnect">Desconectar</string>
+    <string name="player_send_to_tv">Enviar a TV</string>
+</resources>

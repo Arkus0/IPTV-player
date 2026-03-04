@@ -47,6 +47,9 @@ android {
 }
 
 dependencies {
+    // Core shared module
+    implementation(project(":core"))
+
     // Compose BOM
     val composeBom = platform(libs.compose.bom)
     implementation(composeBom)
@@ -89,6 +92,13 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
+
+    // Ktor Server (embedded companion server)
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.ktor.server.content.negotiation)
+    implementation(libs.ktor.server.websockets)
+    implementation(libs.ktor.serialization.gson)
 
     // Media3 (ExoPlayer)
     implementation(libs.media3.exoplayer)

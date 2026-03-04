@@ -16,3 +16,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "JuanPlayer"
 include(":app")
+include(":core")
+include(":mobile")
