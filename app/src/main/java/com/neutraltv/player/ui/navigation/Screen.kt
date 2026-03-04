@@ -11,8 +11,17 @@ sealed class Screen(val route: String) {
     data object Favorites : Screen("favorites")
     data object Epg : Screen("epg")
     data object Vod : Screen("vod")
+    data object Series : Screen("series")
+
+    data object SeriesDetail : Screen("series_detail/{seriesId}") {
+        fun createRoute(seriesId: Long): String = "series_detail/$seriesId"
+    }
 
     data object Player : Screen("player/{channelId}") {
         fun createRoute(channelId: Long): String = "player/$channelId"
+    }
+
+    data object EpisodePlayer : Screen("episode_player/{episodeId}") {
+        fun createRoute(episodeId: Long): String = "episode_player/$episodeId"
     }
 }

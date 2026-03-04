@@ -48,6 +48,7 @@ fun HomeScreen(
     onNavigateToFavorites: () -> Unit,
     onNavigateToEpg: () -> Unit,
     onNavigateToVod: () -> Unit,
+    onNavigateToSeries: () -> Unit,
     onNavigateToPlayer: (Long) -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -159,6 +160,14 @@ fun HomeScreen(
                     title = stringResource(R.string.vod_title),
                     icon = "\uD83C\uDFAC",
                     onClick = onNavigateToVod,
+                    modifier = Modifier.weight(1f).height(140.dp)
+                )
+            }
+            if (uiState.seriesCount > 0) {
+                HomeMenuItem(
+                    title = stringResource(R.string.series_title),
+                    icon = "\uD83D\uDCFA",
+                    onClick = onNavigateToSeries,
                     modifier = Modifier.weight(1f).height(140.dp)
                 )
             }

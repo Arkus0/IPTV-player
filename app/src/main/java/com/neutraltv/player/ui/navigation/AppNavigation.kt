@@ -19,6 +19,8 @@ import com.neutraltv.player.ui.screens.home.HomeScreen
 import com.neutraltv.player.ui.screens.onboarding.OnboardingScreen
 import com.neutraltv.player.ui.screens.player.PlayerScreen
 import com.neutraltv.player.ui.screens.playlists.PlaylistSelectorScreen
+import com.neutraltv.player.ui.screens.series.SeriesDetailScreen
+import com.neutraltv.player.ui.screens.series.SeriesScreen
 import com.neutraltv.player.ui.screens.settings.SettingsScreen
 import com.neutraltv.player.ui.screens.splash.SplashScreen
 
@@ -129,6 +131,9 @@ fun AppNavigation() {
                 onNavigateToVod = {
                     navController.navigate(Screen.Vod.route)
                 },
+                onNavigateToSeries = {
+                    navController.navigate(Screen.Series.route)
+                },
                 onNavigateToPlayer = { channelId ->
                     navController.navigate(Screen.Player.createRoute(channelId))
                 }
@@ -215,6 +220,44 @@ fun AppNavigation() {
                 onChannelSelected = { channelId ->
                     navController.navigate(Screen.Player.createRoute(channelId))
                 },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Series.route) {
+            SeriesScreen(
+                onSeriesSelected = { seriesId ->
+                    navController.navigate(Screen.SeriesDetail.createRoute(seriesId))
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.SeriesDetail.route,
+            arguments = listOf(navArgument("seriesId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val seriesId = backStackEntry.arguments?.getLong("seriesId") ?: return@composable
+            SeriesDetailScreen(
+                onEpisodeSelected = { episodeId ->
+                    navController.navigate(Screen.EpisodePlayer.createRoute(episodeId))
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.EpisodePlayer.route,
+            arguments = listOf(navArgument("episodeId") { type = NavType.LongType }),
+            enterTransition = { fadeIn(tween(FADE_DURATION)) },
+            exitTransition = { fadeOut(tween(FADE_DURATION)) },
+            popEnterTransition = { fadeIn(tween(FADE_DURATION)) },
+            popExitTransition = { fadeOut(tween(FADE_DURATION)) }
+        ) { backStackEntry ->
+            val episodeId = backStackEntry.arguments?.getLong("episodeId") ?: return@composable
+            PlayerScreen(
+                channelId = 0,
+                episodeId = episodeId,
                 onBack = { navController.popBackStack() }
             )
         }

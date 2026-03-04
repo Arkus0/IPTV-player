@@ -13,5 +13,9 @@ data class PlaylistEntity(
     val isActive: Boolean = true,
     val channelCount: Int = 0,
     val createdAt: Long = System.currentTimeMillis(),
-    val epgUrl: String? = null
+    val epgUrl: String? = null,
+    val type: String = "m3u",
+    val serverUrl: String? = null,
+    val username: String? = null,
+    val password: String? = null
 )

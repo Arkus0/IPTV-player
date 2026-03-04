@@ -8,6 +8,7 @@ import com.neutraltv.player.data.preferences.PreferencesRepository
 import com.neutraltv.player.data.repository.EpgRepository
 import com.neutraltv.player.data.repository.FavoriteRepository
 import com.neutraltv.player.data.repository.PlaylistRepository
+import com.neutraltv.player.data.repository.XtreamRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -42,7 +43,10 @@ data class PlayerUiState(
     // VOD
     val isVod: Boolean = false,
     val vodProgress: Long = 0,
-    val vodDuration: Long = 0
+    val vodDuration: Long = 0,
+    // Episode
+    val isEpisode: Boolean = false,
+    val episodeId: Long = 0
 )
 
 @HiltViewModel
@@ -51,7 +55,8 @@ class PlayerViewModel @Inject constructor(
     private val favoriteRepository: FavoriteRepository,
     private val epgRepository: EpgRepository,
     private val retryManager: StreamRetryManager,
-    private val preferencesRepository: PreferencesRepository
+    private val preferencesRepository: PreferencesRepository,
+    private val xtreamRepository: XtreamRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PlayerUiState())
@@ -320,10 +325,49 @@ class PlayerViewModel @Inject constructor(
 
     fun saveVodProgress() {
         val state = _uiState.value
+        if (state.isEpisode) {
+            if (state.episodeId > 0 && state.vodProgress > 0) {
+                viewModelScope.launch {
+                    xtreamRepository.updateEpisodeProgress(state.episodeId, state.vodProgress)
+                }
+            }
+            return
+        }
         val channelId = state.currentChannel?.id ?: return
         if (!state.isVod || state.vodProgress <= 0) return
         viewModelScope.launch {
             repository.saveVodProgress(channelId, state.vodProgress)
+        }
+    }
+
+    fun loadEpisode(episodeId: Long) {
+        viewModelScope.launch {
+            val episode = xtreamRepository.getEpisodeById(episodeId)
+            if (episode == null) {
+                _uiState.value = _uiState.value.copy(error = "Episodio no encontrado")
+                return@launch
+            }
+
+            // Create a synthetic ChannelEntity for the player UI
+            val syntheticChannel = ChannelEntity(
+                id = 0,
+                playlistId = episode.playlistId,
+                name = episode.title,
+                streamUrl = episode.streamUrl,
+                channelType = "vod",
+                position = 0
+            )
+
+            retryManager.reset()
+            _uiState.value = PlayerUiState(
+                currentChannel = syntheticChannel,
+                showChannelInfo = true,
+                isVod = true,
+                isLive = false,
+                isEpisode = true,
+                episodeId = episodeId,
+                vodProgress = episode.progress
+            )
         }
     }
 }

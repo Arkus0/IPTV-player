@@ -8,6 +8,9 @@
     <string name="onboarding_url_hint">URL de lista M3U</string>
     <string name="onboarding_load">Cargar Lista</string>
     <string name="onboarding_load_file">Cargar Archivo Local</string>
+    <string name="onboarding_tab_m3u">Lista M3U</string>
+    <string name="onboarding_tab_xtream">Xtream Codes</string>
+    <string name="onboarding_xtream_subtitle">Ingresa los datos de tu servidor Xtream Codes</string>
     <string name="loading">Cargando…</string>
     <string name="error_invalid_url">URL no válida</string>
     <string name="error_loading_playlist">Error al cargar la lista</string>
@@ -67,7 +70,7 @@
     <string name="error_unknown">Error desconocido</string>
     <string name="error_retry">Reintentar</string>
     <string name="error_next_channel">Siguiente Canal</string>
-    <string name="error_retrying">Reintentando… (%d/%d)</string>
+    <string name="error_retrying">Reintentando… (%1$d/%2$d)</string>
 
     <!-- EPG -->
     <string name="epg_title">Guía de Programación</string>
@@ -110,4 +113,26 @@
     <string name="settings_epg_url_hint">URL del archivo XMLTV (opcional)</string>
     <string name="settings_epg_url_desc">Si tu lista M3U no incluye guía EPG, puedes agregar una URL XMLTV aquí</string>
     <string name="settings_epg_url_save">Guardar</string>
+
+    <!-- Xtream Codes -->
+    <string name="xtream_server_url">URL del Servidor</string>
+    <string name="xtream_server_url_hint">http://servidor:puerto</string>
+    <string name="xtream_username">Usuario</string>
+    <string name="xtream_password">Contraseña</string>
+    <string name="xtream_connect">Conectar</string>
+    <string name="xtream_error_auth">Error de autenticación</string>
+    <string name="xtream_error_expired">Cuenta expirada</string>
+    <string name="xtream_loading_live">Cargando canales en vivo…</string>
+    <string name="xtream_loading_vod">Cargando VOD…</string>
+    <string name="xtream_loading_series">Cargando series…</string>
+
+    <!-- Series -->
+    <string name="series_title">Series</string>
+    <string name="series_empty">No hay series en esta lista</string>
+    <string name="series_search_hint">Buscar series…</string>
+    <string name="series_season">Temporada %d</string>
+    <string name="series_episode">Episodio %d</string>
+    <string name="series_episodes_count">%d episodios</string>
+    <string name="series_all">Todas</string>
+    <string name="series_resume">Continuar</string>
 </resources>

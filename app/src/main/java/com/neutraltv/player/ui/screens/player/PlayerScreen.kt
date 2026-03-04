@@ -73,6 +73,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun PlayerScreen(
     channelId: Long,
+    episodeId: Long = 0,
     onBack: () -> Unit,
     viewModel: PlayerViewModel = hiltViewModel()
 ) {
@@ -86,9 +87,13 @@ fun PlayerScreen(
         }
     }
 
-    // Load initial channel
-    LaunchedEffect(channelId) {
-        viewModel.loadChannel(channelId)
+    // Load initial channel or episode
+    LaunchedEffect(channelId, episodeId) {
+        if (episodeId > 0) {
+            viewModel.loadEpisode(episodeId)
+        } else {
+            viewModel.loadChannel(channelId)
+        }
     }
 
     // Update player when channel changes
@@ -108,9 +113,12 @@ fun PlayerScreen(
             }
             exoPlayer.setMediaItem(mediaItem)
             exoPlayer.prepare()
-            // Resume VOD from saved position
-            if (uiState.isVod && channel.vodProgress > 0) {
-                exoPlayer.seekTo(channel.vodProgress)
+            // Resume VOD/episode from saved position
+            if (uiState.isVod) {
+                val resumePos = if (uiState.isEpisode) uiState.vodProgress else channel.vodProgress
+                if (resumePos > 0) {
+                    exoPlayer.seekTo(resumePos)
+                }
             }
         }
     }

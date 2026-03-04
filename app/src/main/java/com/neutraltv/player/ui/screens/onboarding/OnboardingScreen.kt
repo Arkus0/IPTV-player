@@ -2,6 +2,7 @@ package com.neutraltv.player.ui.screens.onboarding
 
 import android.app.Activity
 import android.content.Intent
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -28,12 +29,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
-import androidx.activity.compose.BackHandler
 import com.neutraltv.player.R
 import com.neutraltv.player.ui.components.LoadingIndicator
 import com.neutraltv.player.ui.theme.Background
@@ -91,6 +92,7 @@ fun OnboardingScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // Back button
         if (showBackButton && onBack != null) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -115,6 +117,7 @@ fun OnboardingScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
+        // Title
         Text(
             text = if (showBackButton) stringResource(R.string.add_playlist_title) else stringResource(R.string.onboarding_title),
             style = JuanPlayerTheme.typography.headlineMedium,
@@ -123,14 +126,62 @@ fun OnboardingScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // Subtitle changes based on mode
         Text(
-            text = stringResource(R.string.onboarding_subtitle),
+            text = if (uiState.isXtreamMode) {
+                stringResource(R.string.onboarding_xtream_subtitle)
+            } else {
+                stringResource(R.string.onboarding_subtitle)
+            },
             style = JuanPlayerTheme.typography.bodyMedium,
             color = OnSurfaceVariant
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
+        // Toggle tabs: Lista M3U / Xtream Codes
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Button(
+                onClick = { viewModel.setXtreamMode(false) },
+                colors = ButtonDefaults.colors(
+                    containerColor = if (!uiState.isXtreamMode) Primary else Surface,
+                    contentColor = if (!uiState.isXtreamMode) Background else OnSurface,
+                    focusedContainerColor = FocusBorder,
+                    focusedContentColor = Background
+                )
+            ) {
+                Text(
+                    text = stringResource(R.string.onboarding_tab_m3u),
+                    style = JuanPlayerTheme.typography.labelLarge,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Button(
+                onClick = { viewModel.setXtreamMode(true) },
+                colors = ButtonDefaults.colors(
+                    containerColor = if (uiState.isXtreamMode) Primary else Surface,
+                    contentColor = if (uiState.isXtreamMode) Background else OnSurface,
+                    focusedContainerColor = FocusBorder,
+                    focusedContentColor = Background
+                )
+            ) {
+                Text(
+                    text = stringResource(R.string.onboarding_tab_xtream),
+                    style = JuanPlayerTheme.typography.labelLarge,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Name field (shared between both modes)
         OutlinedTextField(
             value = uiState.name,
             onValueChange = viewModel::onNameChanged,
@@ -161,91 +212,220 @@ fun OnboardingScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
-            value = uiState.url,
-            onValueChange = viewModel::onUrlChanged,
-            label = {
-                Text(
-                    text = stringResource(R.string.onboarding_url_hint),
-                    color = OnSurfaceVariant
-                )
-            },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            textStyle = JuanPlayerTheme.typography.bodyLarge.copy(color = OnSurface),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Uri,
-                imeAction = ImeAction.Done
-            ),
-            keyboardActions = KeyboardActions(
-                onDone = { viewModel.loadPlaylist() }
-            ),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = FocusBorder,
-                unfocusedBorderColor = OnSurfaceVariant,
-                cursorColor = Primary,
-                focusedLabelColor = FocusBorder,
-                unfocusedLabelColor = OnSurfaceVariant,
-                focusedContainerColor = Background,
-                unfocusedContainerColor = Background
-            ),
-            shape = RoundedCornerShape(8.dp),
-            isError = uiState.error != null
-        )
-
-        if (uiState.error != null) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = uiState.error!!,
-                style = JuanPlayerTheme.typography.labelMedium,
-                color = Error
+        if (!uiState.isXtreamMode) {
+            // M3U mode: URL field + Load / File buttons
+            OutlinedTextField(
+                value = uiState.url,
+                onValueChange = viewModel::onUrlChanged,
+                label = {
+                    Text(
+                        text = stringResource(R.string.onboarding_url_hint),
+                        color = OnSurfaceVariant
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                textStyle = JuanPlayerTheme.typography.bodyLarge.copy(color = OnSurface),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Uri,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { viewModel.loadPlaylist() }
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = FocusBorder,
+                    unfocusedBorderColor = OnSurfaceVariant,
+                    cursorColor = Primary,
+                    focusedLabelColor = FocusBorder,
+                    unfocusedLabelColor = OnSurfaceVariant,
+                    focusedContainerColor = Background,
+                    unfocusedContainerColor = Background
+                ),
+                shape = RoundedCornerShape(8.dp),
+                isError = uiState.error != null
             )
-        }
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Button(
-                onClick = { viewModel.loadPlaylist() },
-                colors = ButtonDefaults.colors(
-                    containerColor = Primary,
-                    contentColor = Background,
-                    focusedContainerColor = FocusBorder,
-                    focusedContentColor = Background
-                )
-            ) {
+            if (uiState.error != null) {
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = stringResource(R.string.onboarding_load),
-                    style = JuanPlayerTheme.typography.labelLarge,
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                    text = uiState.error!!,
+                    style = JuanPlayerTheme.typography.labelMedium,
+                    color = Error
                 )
             }
 
-            Spacer(modifier = Modifier.width(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-            Button(
-                onClick = {
-                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                        addCategory(Intent.CATEGORY_OPENABLE)
-                        type = "*/*"
-                    }
-                    filePickerLauncher.launch(intent)
-                },
-                colors = ButtonDefaults.colors(
-                    containerColor = Surface,
-                    contentColor = OnSurface,
-                    focusedContainerColor = FocusBorder,
-                    focusedContentColor = Background
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
             ) {
+                Button(
+                    onClick = { viewModel.loadPlaylist() },
+                    colors = ButtonDefaults.colors(
+                        containerColor = Primary,
+                        contentColor = Background,
+                        focusedContainerColor = FocusBorder,
+                        focusedContentColor = Background
+                    )
+                ) {
+                    Text(
+                        text = stringResource(R.string.onboarding_load),
+                        style = JuanPlayerTheme.typography.labelLarge,
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(24.dp))
+
+                Button(
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                            addCategory(Intent.CATEGORY_OPENABLE)
+                            type = "*/*"
+                        }
+                        filePickerLauncher.launch(intent)
+                    },
+                    colors = ButtonDefaults.colors(
+                        containerColor = Surface,
+                        contentColor = OnSurface,
+                        focusedContainerColor = FocusBorder,
+                        focusedContentColor = Background
+                    )
+                ) {
+                    Text(
+                        text = stringResource(R.string.onboarding_load_file),
+                        style = JuanPlayerTheme.typography.labelLarge,
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                    )
+                }
+            }
+        } else {
+            // Xtream Codes mode: Server URL, Username, Password fields + Connect button
+            OutlinedTextField(
+                value = uiState.serverUrl,
+                onValueChange = viewModel::onServerUrlChanged,
+                label = {
+                    Text(
+                        text = stringResource(R.string.xtream_server_url_hint),
+                        color = OnSurfaceVariant
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                textStyle = JuanPlayerTheme.typography.bodyLarge.copy(color = OnSurface),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Uri,
+                    imeAction = ImeAction.Next
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = FocusBorder,
+                    unfocusedBorderColor = OnSurfaceVariant,
+                    cursorColor = Primary,
+                    focusedLabelColor = FocusBorder,
+                    unfocusedLabelColor = OnSurfaceVariant,
+                    focusedContainerColor = Background,
+                    unfocusedContainerColor = Background
+                ),
+                shape = RoundedCornerShape(8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = uiState.username,
+                onValueChange = viewModel::onUsernameChanged,
+                label = {
+                    Text(
+                        text = stringResource(R.string.xtream_username),
+                        color = OnSurfaceVariant
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                textStyle = JuanPlayerTheme.typography.bodyLarge.copy(color = OnSurface),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = FocusBorder,
+                    unfocusedBorderColor = OnSurfaceVariant,
+                    cursorColor = Primary,
+                    focusedLabelColor = FocusBorder,
+                    unfocusedLabelColor = OnSurfaceVariant,
+                    focusedContainerColor = Background,
+                    unfocusedContainerColor = Background
+                ),
+                shape = RoundedCornerShape(8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = uiState.password,
+                onValueChange = viewModel::onPasswordChanged,
+                label = {
+                    Text(
+                        text = stringResource(R.string.xtream_password),
+                        color = OnSurfaceVariant
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                textStyle = JuanPlayerTheme.typography.bodyLarge.copy(color = OnSurface),
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { viewModel.connectXtream() }
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = FocusBorder,
+                    unfocusedBorderColor = OnSurfaceVariant,
+                    cursorColor = Primary,
+                    focusedLabelColor = FocusBorder,
+                    unfocusedLabelColor = OnSurfaceVariant,
+                    focusedContainerColor = Background,
+                    unfocusedContainerColor = Background
+                ),
+                shape = RoundedCornerShape(8.dp),
+                isError = uiState.error != null
+            )
+
+            if (uiState.error != null) {
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = stringResource(R.string.onboarding_load_file),
-                    style = JuanPlayerTheme.typography.labelLarge,
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                    text = uiState.error!!,
+                    style = JuanPlayerTheme.typography.labelMedium,
+                    color = Error
                 )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Button(
+                    onClick = { viewModel.connectXtream() },
+                    colors = ButtonDefaults.colors(
+                        containerColor = Primary,
+                        contentColor = Background,
+                        focusedContainerColor = FocusBorder,
+                        focusedContentColor = Background
+                    )
+                ) {
+                    Text(
+                        text = stringResource(R.string.xtream_connect),
+                        style = JuanPlayerTheme.typography.labelLarge,
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                    )
+                }
             }
         }
     }

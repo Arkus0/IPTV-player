@@ -5,10 +5,13 @@ import androidx.room.Room
 import com.neutraltv.player.data.local.AppDatabase
 import com.neutraltv.player.data.local.MIGRATION_1_2
 import com.neutraltv.player.data.local.MIGRATION_2_3
+import com.neutraltv.player.data.local.MIGRATION_3_4
 import com.neutraltv.player.data.local.dao.ChannelDao
+import com.neutraltv.player.data.local.dao.EpisodeDao
 import com.neutraltv.player.data.local.dao.FavoriteDao
 import com.neutraltv.player.data.local.dao.PlaylistDao
 import com.neutraltv.player.data.local.dao.ProgramDao
+import com.neutraltv.player.data.local.dao.SeriesDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,7 +31,7 @@ object DatabaseModule {
             AppDatabase::class.java,
             "jotaplayer.db"
         )
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
             .build()
     }
 
@@ -50,5 +53,15 @@ object DatabaseModule {
     @Provides
     fun provideProgramDao(database: AppDatabase): ProgramDao {
         return database.programDao()
+    }
+
+    @Provides
+    fun provideSeriesDao(database: AppDatabase): SeriesDao {
+        return database.seriesDao()
+    }
+
+    @Provides
+    fun provideEpisodeDao(database: AppDatabase): EpisodeDao {
+        return database.episodeDao()
     }
 }
