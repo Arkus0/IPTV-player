@@ -4,11 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.neutraltv.player.data.local.entity.ChannelEntity
 import com.neutraltv.player.data.local.entity.ProgramEntity
+import com.neutraltv.player.data.preferences.PreferencesRepository
 import com.neutraltv.player.data.repository.EpgRepository
 import com.neutraltv.player.data.repository.PlaylistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,7 +28,8 @@ data class EpgUiState(
 @HiltViewModel
 class EpgViewModel @Inject constructor(
     private val playlistRepository: PlaylistRepository,
-    private val epgRepository: EpgRepository
+    private val epgRepository: EpgRepository,
+    private val preferencesRepository: PreferencesRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EpgUiState())
@@ -36,7 +39,9 @@ class EpgViewModel @Inject constructor(
         viewModelScope.launch {
             playlistRepository.getActivePlaylist().collect { playlist ->
                 if (playlist != null) {
-                    loadChannelsAndPrograms(playlist.id, playlist.epgUrl)
+                    val epgUrl = playlist.epgUrl
+                        ?: preferencesRepository.getUserPreferences().first().customEpgUrl.takeIf { it.isNotBlank() }
+                    loadChannelsAndPrograms(playlist.id, epgUrl)
                 } else {
                     _uiState.value = EpgUiState(isLoading = false)
                 }

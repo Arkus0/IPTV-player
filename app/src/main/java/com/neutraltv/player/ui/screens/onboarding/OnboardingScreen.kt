@@ -39,7 +39,7 @@ import com.neutraltv.player.ui.components.LoadingIndicator
 import com.neutraltv.player.ui.theme.Background
 import com.neutraltv.player.ui.theme.Error
 import com.neutraltv.player.ui.theme.FocusBorder
-import com.neutraltv.player.ui.theme.JotaPlayerTypography
+import com.neutraltv.player.ui.theme.JuanPlayerTheme
 import com.neutraltv.player.ui.theme.OnSurface
 import com.neutraltv.player.ui.theme.OnSurfaceVariant
 import com.neutraltv.player.ui.theme.Primary
@@ -107,7 +107,7 @@ fun OnboardingScreen(
                 ) {
                     Text(
                         text = stringResource(R.string.back),
-                        style = JotaPlayerTypography.labelLarge,
+                        style = JuanPlayerTheme.typography.labelLarge,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                     )
                 }
@@ -117,7 +117,7 @@ fun OnboardingScreen(
 
         Text(
             text = if (showBackButton) stringResource(R.string.add_playlist_title) else stringResource(R.string.onboarding_title),
-            style = JotaPlayerTypography.headlineMedium,
+            style = JuanPlayerTheme.typography.headlineMedium,
             color = Primary
         )
 
@@ -125,7 +125,7 @@ fun OnboardingScreen(
 
         Text(
             text = stringResource(R.string.onboarding_subtitle),
-            style = JotaPlayerTypography.bodyMedium,
+            style = JuanPlayerTheme.typography.bodyMedium,
             color = OnSurfaceVariant
         )
 
@@ -142,7 +142,7 @@ fun OnboardingScreen(
             },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            textStyle = JotaPlayerTypography.bodyLarge.copy(color = OnSurface),
+            textStyle = JuanPlayerTheme.typography.bodyLarge.copy(color = OnSurface),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Next
@@ -172,7 +172,7 @@ fun OnboardingScreen(
             },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            textStyle = JotaPlayerTypography.bodyLarge.copy(color = OnSurface),
+            textStyle = JuanPlayerTheme.typography.bodyLarge.copy(color = OnSurface),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Uri,
                 imeAction = ImeAction.Done
@@ -197,7 +197,7 @@ fun OnboardingScreen(
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = uiState.error!!,
-                style = JotaPlayerTypography.labelMedium,
+                style = JuanPlayerTheme.typography.labelMedium,
                 color = Error
             )
         }
@@ -219,7 +219,7 @@ fun OnboardingScreen(
             ) {
                 Text(
                     text = stringResource(R.string.onboarding_load),
-                    style = JotaPlayerTypography.labelLarge,
+                    style = JuanPlayerTheme.typography.labelLarge,
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
                 )
             }
@@ -243,7 +243,7 @@ fun OnboardingScreen(
             ) {
                 Text(
                     text = stringResource(R.string.onboarding_load_file),
-                    style = JotaPlayerTypography.labelLarge,
+                    style = JuanPlayerTheme.typography.labelLarge,
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
                 )
             }

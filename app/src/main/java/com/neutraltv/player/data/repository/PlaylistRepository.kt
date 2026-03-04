@@ -23,6 +23,8 @@ class PlaylistRepository @Inject constructor(
 
     fun getActivePlaylist(): Flow<PlaylistEntity?> = playlistDao.getActivePlaylist()
 
+    suspend fun getActivePlaylistOnce(): PlaylistEntity? = playlistDao.getActivePlaylistOnce()
+
     suspend fun hasActivePlaylist(): Boolean = playlistDao.hasActivePlaylist()
 
     fun getVisibleChannels(playlistId: Long): Flow<List<ChannelEntity>> =

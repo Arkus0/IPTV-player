@@ -13,7 +13,8 @@ import javax.inject.Inject
 
 data class SettingsUiState(
     val currentTheme: String = "purple_dark",
-    val currentFontScale: Float = 1.0f
+    val currentFontScale: Float = 1.0f,
+    val customEpgUrl: String = ""
 )
 
 @HiltViewModel
@@ -30,7 +31,8 @@ class SettingsViewModel @Inject constructor(
             preferencesRepository.getUserPreferences().collect { prefs ->
                 _uiState.value = SettingsUiState(
                     currentTheme = prefs.themeId,
-                    currentFontScale = prefs.fontScale
+                    currentFontScale = prefs.fontScale,
+                    customEpgUrl = prefs.customEpgUrl
                 )
             }
         }
@@ -45,6 +47,12 @@ class SettingsViewModel @Inject constructor(
     fun selectFontScale(scale: Float) {
         viewModelScope.launch {
             preferencesRepository.setFontScale(scale)
+        }
+    }
+
+    fun saveCustomEpgUrl(url: String) {
+        viewModelScope.launch {
+            preferencesRepository.setCustomEpgUrl(url.trim())
         }
     }
 

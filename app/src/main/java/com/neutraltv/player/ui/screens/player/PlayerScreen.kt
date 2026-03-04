@@ -61,7 +61,7 @@ import com.neutraltv.player.R
 import com.neutraltv.player.ui.theme.Background
 import com.neutraltv.player.ui.theme.Error
 import com.neutraltv.player.ui.theme.FocusBorder
-import com.neutraltv.player.ui.theme.JotaPlayerTypography
+import com.neutraltv.player.ui.theme.JuanPlayerTheme
 import com.neutraltv.player.ui.theme.OnSurface
 import com.neutraltv.player.ui.theme.OnSurfaceVariant
 import com.neutraltv.player.ui.theme.Primary
@@ -217,7 +217,12 @@ fun PlayerScreen(
                         }
                         KeyEvent.KEYCODE_DPAD_CENTER,
                         KeyEvent.KEYCODE_ENTER -> {
-                            viewModel.toggleControls()
+                            if (uiState.isTimeshifted) {
+                                exoPlayer.seekToDefaultPosition()
+                                viewModel.seekToLive()
+                            } else {
+                                viewModel.toggleControls()
+                            }
                             true
                         }
                         KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
@@ -301,20 +306,16 @@ fun PlayerScreen(
             )
         }
 
-        // Timeshift overlay (top-right) — shown when timeshifted or live
+        // Timeshift overlay (top-right) — shown with controls when timeshifted
         AnimatedVisibility(
-            visible = !uiState.isVod && (uiState.isTimeshifted || uiState.showChannelInfo),
+            visible = !uiState.isVod && uiState.isTimeshifted && uiState.showControls,
             enter = fadeIn(),
             exit = fadeOut(),
             modifier = Modifier.align(Alignment.TopEnd)
         ) {
             TimeshiftOverlay(
                 isTimeshifted = uiState.isTimeshifted,
-                liveOffsetMs = uiState.liveOffsetMs,
-                onGoLive = {
-                    exoPlayer.seekToDefaultPosition()
-                    viewModel.seekToLive()
-                }
+                liveOffsetMs = uiState.liveOffsetMs
             )
         }
 
@@ -353,13 +354,13 @@ private fun ErrorOverlay(
             if (isRetrying) {
                 Text(
                     text = stringResource(R.string.error_retrying, retryAttempt, maxRetries),
-                    style = JotaPlayerTypography.titleMedium,
+                    style = JuanPlayerTheme.typography.titleMedium,
                     color = OnSurface
                 )
             } else {
                 Text(
                     text = errorMessage ?: stringResource(R.string.error_unknown),
-                    style = JotaPlayerTypography.titleMedium,
+                    style = JuanPlayerTheme.typography.titleMedium,
                     color = Error
                 )
                 Spacer(modifier = Modifier.height(24.dp))
@@ -375,7 +376,7 @@ private fun ErrorOverlay(
                     ) {
                         Text(
                             text = stringResource(R.string.error_retry),
-                            style = JotaPlayerTypography.labelLarge,
+                            style = JuanPlayerTheme.typography.labelLarge,
                             modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
                         )
                     }
@@ -390,7 +391,7 @@ private fun ErrorOverlay(
                     ) {
                         Text(
                             text = stringResource(R.string.error_next_channel),
-                            style = JotaPlayerTypography.labelLarge,
+                            style = JuanPlayerTheme.typography.labelLarge,
                             modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
                         )
                     }
@@ -423,7 +424,7 @@ private fun ChannelInfoOverlay(
         // Type badge
         Text(
             text = if (isVod) "VOD" else stringResource(R.string.timeshift_live),
-            style = JotaPlayerTypography.labelSmall,
+            style = JuanPlayerTheme.typography.labelSmall,
             color = if (isVod) Primary else Color(0xFF4CAF50),
             modifier = Modifier
                 .background(
@@ -438,7 +439,7 @@ private fun ChannelInfoOverlay(
         // Channel number
         Text(
             text = channelNumber.toString(),
-            style = JotaPlayerTypography.headlineMedium,
+            style = JuanPlayerTheme.typography.headlineMedium,
             color = Primary
         )
 
@@ -466,14 +467,14 @@ private fun ChannelInfoOverlay(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = channelName,
-                    style = JotaPlayerTypography.titleMedium,
+                    style = JuanPlayerTheme.typography.titleMedium,
                     color = OnSurface
                 )
                 if (isFavorite) {
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "\u2605",
-                        style = JotaPlayerTypography.titleMedium,
+                        style = JuanPlayerTheme.typography.titleMedium,
                         color = Primary
                     )
                 }
@@ -481,7 +482,7 @@ private fun ChannelInfoOverlay(
             if (groupTitle != null) {
                 Text(
                     text = groupTitle,
-                    style = JotaPlayerTypography.labelMedium,
+                    style = JuanPlayerTheme.typography.labelMedium,
                     color = OnSurfaceVariant
                 )
             }
@@ -489,7 +490,7 @@ private fun ChannelInfoOverlay(
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = "${stringResource(R.string.epg_now)}: $currentProgramTitle",
-                    style = JotaPlayerTypography.labelMedium,
+                    style = JuanPlayerTheme.typography.labelMedium,
                     color = FocusBorder
                 )
             }
@@ -516,33 +517,33 @@ private fun PlayerControlsOverlay(
     ) {
         Text(
             text = channelName,
-            style = JotaPlayerTypography.titleMedium,
+            style = JuanPlayerTheme.typography.titleMedium,
             color = OnSurface
         )
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = if (isPlaying) "\u23F8" else "\u25B6", // Pause / Play
-                style = JotaPlayerTypography.headlineMedium,
+                style = JuanPlayerTheme.typography.headlineMedium,
                 color = FocusBorder
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = "\u2191 Canal anterior",
-                    style = JotaPlayerTypography.labelMedium,
+                    style = JuanPlayerTheme.typography.labelMedium,
                     color = OnSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = "\u2193 Canal siguiente",
-                    style = JotaPlayerTypography.labelMedium,
+                    style = JuanPlayerTheme.typography.labelMedium,
                     color = OnSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = "\u2190\u2192 Retroceder/Avanzar 10s",
-                    style = JotaPlayerTypography.labelMedium,
+                    style = JuanPlayerTheme.typography.labelMedium,
                     color = OnSurfaceVariant
                 )
             }
@@ -553,8 +554,7 @@ private fun PlayerControlsOverlay(
 @Composable
 private fun TimeshiftOverlay(
     isTimeshifted: Boolean,
-    liveOffsetMs: Long,
-    onGoLive: () -> Unit
+    liveOffsetMs: Long
 ) {
     Column(
         modifier = Modifier
@@ -571,29 +571,19 @@ private fun TimeshiftOverlay(
             val seconds = ((liveOffsetMs % 60000) / 1000).toInt()
             Text(
                 text = stringResource(R.string.timeshift_behind, minutes, seconds),
-                style = JotaPlayerTypography.titleMedium,
+                style = JuanPlayerTheme.typography.titleMedium,
                 color = Primary
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Button(
-                onClick = onGoLive,
-                colors = ButtonDefaults.colors(
-                    containerColor = Color(0xFF4CAF50),
-                    contentColor = OnSurface,
-                    focusedContainerColor = FocusBorder,
-                    focusedContentColor = Background
-                )
-            ) {
-                Text(
-                    text = stringResource(R.string.timeshift_go_live),
-                    style = JotaPlayerTypography.labelLarge,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
-                )
-            }
+            Text(
+                text = "OK \u2192 ${stringResource(R.string.timeshift_go_live)}",
+                style = JuanPlayerTheme.typography.labelLarge,
+                color = Color(0xFF4CAF50)
+            )
         } else {
             Text(
                 text = stringResource(R.string.timeshift_live),
-                style = JotaPlayerTypography.titleMedium,
+                style = JuanPlayerTheme.typography.titleMedium,
                 color = Color(0xFF4CAF50)
             )
         }
@@ -620,7 +610,7 @@ private fun VodControlsOverlay(
         // Title
         Text(
             text = channelName,
-            style = JotaPlayerTypography.titleMedium,
+            style = JuanPlayerTheme.typography.titleMedium,
             color = OnSurface
         )
 
@@ -652,17 +642,17 @@ private fun VodControlsOverlay(
         ) {
             Text(
                 text = formatTime(currentPosition),
-                style = JotaPlayerTypography.labelMedium,
+                style = JuanPlayerTheme.typography.labelMedium,
                 color = OnSurfaceVariant
             )
             Text(
                 text = if (isPlaying) "\u23F8" else "\u25B6",
-                style = JotaPlayerTypography.headlineMedium,
+                style = JuanPlayerTheme.typography.headlineMedium,
                 color = FocusBorder
             )
             Text(
                 text = formatTime(duration),
-                style = JotaPlayerTypography.labelMedium,
+                style = JuanPlayerTheme.typography.labelMedium,
                 color = OnSurfaceVariant
             )
         }
@@ -670,7 +660,7 @@ private fun VodControlsOverlay(
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = "\u2190\u2192 Retroceder/Avanzar 10s",
-            style = JotaPlayerTypography.labelMedium,
+            style = JuanPlayerTheme.typography.labelMedium,
             color = OnSurfaceVariant,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )

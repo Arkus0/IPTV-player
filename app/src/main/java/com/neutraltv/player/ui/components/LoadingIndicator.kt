@@ -12,7 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
-import com.neutraltv.player.ui.theme.JotaPlayerTypography
+import com.neutraltv.player.ui.theme.JuanPlayerTheme
 import com.neutraltv.player.ui.theme.OnSurfaceVariant
 import com.neutraltv.player.ui.theme.Primary
 
@@ -34,7 +34,7 @@ fun LoadingIndicator(
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = message,
-            style = JotaPlayerTypography.bodyMedium,
+            style = JuanPlayerTheme.typography.bodyMedium,
             color = OnSurfaceVariant
         )
     }

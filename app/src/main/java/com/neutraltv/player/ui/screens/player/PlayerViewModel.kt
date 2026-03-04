@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.neutraltv.player.data.local.entity.ChannelEntity
 import com.neutraltv.player.data.player.StreamRetryManager
+import com.neutraltv.player.data.preferences.PreferencesRepository
 import com.neutraltv.player.data.repository.EpgRepository
 import com.neutraltv.player.data.repository.FavoriteRepository
 import com.neutraltv.player.data.repository.PlaylistRepository
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -48,7 +50,8 @@ class PlayerViewModel @Inject constructor(
     private val repository: PlaylistRepository,
     private val favoriteRepository: FavoriteRepository,
     private val epgRepository: EpgRepository,
-    private val retryManager: StreamRetryManager
+    private val retryManager: StreamRetryManager,
+    private val preferencesRepository: PreferencesRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PlayerUiState())
@@ -83,7 +86,26 @@ class PlayerViewModel @Inject constructor(
 
             repository.markChannelWatched(channelId)
             observeFavoriteStatus(channelId)
-            if (!isVod) observeCurrentProgram(channel)
+            if (!isVod) {
+                observeCurrentProgram(channel)
+                fetchEpgIfNeeded(channel.playlistId)
+            }
+        }
+    }
+
+    private fun fetchEpgIfNeeded(playlistId: Long) {
+        viewModelScope.launch {
+            val playlist = repository.getActivePlaylistOnce() ?: return@launch
+            val epgUrl = playlist.epgUrl
+                ?: preferencesRepository.getUserPreferences().first().customEpgUrl.takeIf { it.isNotBlank() }
+                ?: return@launch
+            // Check if we already have EPG data
+            val channel = _uiState.value.currentChannel ?: return@launch
+            val epgChannelId = channel.epgChannelId ?: return@launch
+            val existing = epgRepository.getCurrentProgramOnce(epgChannelId)
+            if (existing == null) {
+                epgRepository.loadEpg(playlistId, epgUrl)
+            }
         }
     }
 

@@ -38,7 +38,7 @@ import coil.compose.AsyncImage
 import com.neutraltv.player.R
 import com.neutraltv.player.ui.components.LoadingIndicator
 import com.neutraltv.player.ui.theme.FocusBorder
-import com.neutraltv.player.ui.theme.JotaPlayerTypography
+import com.neutraltv.player.ui.theme.JuanPlayerTheme
 import com.neutraltv.player.ui.theme.OnSurfaceVariant
 import com.neutraltv.player.ui.theme.Primary
 import com.neutraltv.player.ui.theme.Surface as SurfaceColor
@@ -61,7 +61,7 @@ fun FavoritesScreen(
     ) {
         Text(
             text = stringResource(R.string.favorites_title),
-            style = JotaPlayerTypography.headlineLarge,
+            style = JuanPlayerTheme.typography.headlineLarge,
             color = Primary
         )
 
@@ -74,14 +74,14 @@ fun FavoritesScreen(
             uiState.channels.isEmpty() -> {
                 Text(
                     text = stringResource(R.string.favorites_empty),
-                    style = JotaPlayerTypography.bodyLarge,
+                    style = JuanPlayerTheme.typography.bodyLarge,
                     color = OnSurfaceVariant
                 )
             }
             else -> {
                 Text(
                     text = stringResource(R.string.channel_count, uiState.channels.size),
-                    style = JotaPlayerTypography.labelMedium,
+                    style = JuanPlayerTheme.typography.labelMedium,
                     color = OnSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -144,7 +144,7 @@ private fun FavoriteChannelItem(
             // Star icon
             Text(
                 text = "\u2605",
-                style = JotaPlayerTypography.titleMedium,
+                style = JuanPlayerTheme.typography.titleMedium,
                 color = Primary
             )
 
@@ -167,14 +167,14 @@ private fun FavoriteChannelItem(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = name,
-                    style = JotaPlayerTypography.bodyLarge,
+                    style = JuanPlayerTheme.typography.bodyLarge,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 if (groupTitle != null) {
                     Text(
                         text = groupTitle,
-                        style = JotaPlayerTypography.labelMedium,
+                        style = JuanPlayerTheme.typography.labelMedium,
                         color = OnSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis

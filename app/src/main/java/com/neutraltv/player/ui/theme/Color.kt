@@ -2,7 +2,7 @@ package com.neutraltv.player.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-data class JotaPlayerColors(
+data class AppColors(
     val background: Color,
     val surface: Color,
     val surfaceVariant: Color,
@@ -17,7 +17,7 @@ data class JotaPlayerColors(
     val focusBorder: Color
 )
 
-val PurpleDarkColors = JotaPlayerColors(
+val PurpleDarkColors = AppColors(
     background = Color(0xFF121212),
     surface = Color(0xFF1E1E1E),
     surfaceVariant = Color(0xFF2C2C2C),
@@ -32,22 +32,22 @@ val PurpleDarkColors = JotaPlayerColors(
     focusBorder = Color(0xFF03DAC5)
 )
 
-val BlueDarkColors = JotaPlayerColors(
-    background = Color(0xFF0D1117),
-    surface = Color(0xFF161B22),
-    surfaceVariant = Color(0xFF21262D),
+val BlueDarkColors = AppColors(
+    background = Color(0xFF0A1929),
+    surface = Color(0xFF132F4C),
+    surfaceVariant = Color(0xFF1A3A5C),
     primary = Color(0xFF64B5F6),
     primaryVariant = Color(0xFF42A5F5),
-    secondary = Color(0xFF4DD0E1),
+    secondary = Color(0xFF80DEEA),
     onBackground = Color(0xFFFFFFFF),
     onSurface = Color(0xFFFFFFFF),
     onSurfaceVariant = Color(0xB3FFFFFF),
     onPrimary = Color(0xFF000000),
     error = Color(0xFFCF6679),
-    focusBorder = Color(0xFF4DD0E1)
+    focusBorder = Color(0xFF80DEEA)
 )
 
-val OledBlackColors = JotaPlayerColors(
+val OledBlackColors = AppColors(
     background = Color(0xFF000000),
     surface = Color(0xFF0A0A0A),
     surfaceVariant = Color(0xFF1A1A1A),
@@ -62,7 +62,7 @@ val OledBlackColors = JotaPlayerColors(
     focusBorder = Color(0xFF03DAC5)
 )
 
-val LightColors = JotaPlayerColors(
+val LightColors = AppColors(
     background = Color(0xFFFEFEFE),
     surface = Color(0xFFF5F5F5),
     surfaceVariant = Color(0xFFE8E8E8),
@@ -77,7 +77,7 @@ val LightColors = JotaPlayerColors(
     focusBorder = Color(0xFF6750A4)
 )
 
-fun getThemeColors(themeId: String): JotaPlayerColors = when (themeId) {
+fun getThemeColors(themeId: String): AppColors = when (themeId) {
     "purple_dark" -> PurpleDarkColors
     "blue_dark" -> BlueDarkColors
     "oled_black" -> OledBlackColors

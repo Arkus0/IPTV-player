@@ -8,7 +8,7 @@ import androidx.compose.runtime.getValue
 import com.neutraltv.player.data.preferences.PreferencesRepository
 import com.neutraltv.player.data.preferences.UserPreferences
 import com.neutraltv.player.ui.navigation.AppNavigation
-import com.neutraltv.player.ui.theme.JotaPlayerTheme
+import com.neutraltv.player.ui.theme.JuanPlayerTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
             val preferences by preferencesRepository.getUserPreferences()
                 .collectAsState(initial = UserPreferences())
 
-            JotaPlayerTheme(
+            JuanPlayerTheme(
                 themeId = preferences.themeId,
                 fontScale = preferences.fontScale
             ) {

@@ -35,7 +35,7 @@ import com.neutraltv.player.R
 import com.neutraltv.player.data.local.entity.ChannelEntity
 import com.neutraltv.player.ui.components.FocusableCard
 import com.neutraltv.player.ui.components.LoadingIndicator
-import com.neutraltv.player.ui.theme.JotaPlayerTypography
+import com.neutraltv.player.ui.theme.JuanPlayerTheme
 import com.neutraltv.player.ui.theme.OnSurface
 import com.neutraltv.player.ui.theme.OnSurfaceVariant
 import com.neutraltv.player.ui.theme.Primary
@@ -72,15 +72,15 @@ fun HomeScreen(
         ) {
             Column {
                 Text(
-                    text = "JotaPlayer",
-                    style = JotaPlayerTypography.headlineLarge,
+                    text = "JuanPlayer",
+                    style = JuanPlayerTheme.typography.headlineLarge,
                     color = Primary
                 )
                 uiState.playlist?.let { playlist ->
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = "${playlist.name} · ${playlist.channelCount} canales",
-                        style = JotaPlayerTypography.labelMedium,
+                        style = JuanPlayerTheme.typography.labelMedium,
                         color = OnSurfaceVariant
                     )
                 }
@@ -97,7 +97,7 @@ fun HomeScreen(
                 ) {
                     Text(
                         text = stringResource(R.string.home_change_playlist),
-                        style = JotaPlayerTypography.labelLarge,
+                        style = JuanPlayerTheme.typography.labelLarge,
                         color = OnSurface
                     )
                 }
@@ -110,7 +110,7 @@ fun HomeScreen(
         if (uiState.recentChannels.isNotEmpty()) {
             Text(
                 text = stringResource(R.string.recent_title),
-                style = JotaPlayerTypography.titleMedium,
+                style = JuanPlayerTheme.typography.titleMedium,
                 color = OnSurface
             )
             Spacer(modifier = Modifier.height(12.dp))
@@ -125,7 +125,7 @@ fun HomeScreen(
         if (uiState.favoriteChannels.isNotEmpty()) {
             Text(
                 text = stringResource(R.string.favorites_title),
-                style = JotaPlayerTypography.titleMedium,
+                style = JuanPlayerTheme.typography.titleMedium,
                 color = OnSurface
             )
             Spacer(modifier = Modifier.height(12.dp))
@@ -139,7 +139,7 @@ fun HomeScreen(
         // Menu cards row
         Text(
             text = "Menú",
-            style = JotaPlayerTypography.titleMedium,
+            style = JuanPlayerTheme.typography.titleMedium,
             color = OnSurface
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -237,14 +237,14 @@ private fun ChannelCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = channel.name,
-                    style = JotaPlayerTypography.bodyMedium,
+                    style = JuanPlayerTheme.typography.bodyMedium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
                 if (channel.groupTitle != null) {
                     Text(
                         text = channel.groupTitle,
-                        style = JotaPlayerTypography.labelSmall,
+                        style = JuanPlayerTheme.typography.labelSmall,
                         color = OnSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -273,15 +273,15 @@ private fun HomeMenuItem(
         ) {
             Text(
                 text = icon,
-                style = JotaPlayerTypography.headlineLarge.copy(
-                    fontSize = JotaPlayerTypography.headlineLarge.fontSize * 1.3
+                style = JuanPlayerTheme.typography.headlineLarge.copy(
+                    fontSize = JuanPlayerTheme.typography.headlineLarge.fontSize * 1.3
                 ),
                 color = Primary
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = title,
-                style = JotaPlayerTypography.titleMedium
+                style = JuanPlayerTheme.typography.titleMedium
             )
         }
     }

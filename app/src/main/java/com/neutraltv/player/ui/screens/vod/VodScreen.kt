@@ -37,7 +37,7 @@ import com.neutraltv.player.R
 import com.neutraltv.player.data.local.entity.ChannelEntity
 import com.neutraltv.player.ui.components.FocusableCard
 import com.neutraltv.player.ui.components.LoadingIndicator
-import com.neutraltv.player.ui.theme.JotaPlayerTypography
+import com.neutraltv.player.ui.theme.JuanPlayerTheme
 import com.neutraltv.player.ui.theme.OnSurface
 import com.neutraltv.player.ui.theme.OnSurfaceVariant
 import com.neutraltv.player.ui.theme.Primary
@@ -67,7 +67,7 @@ fun VodScreen(
         ) {
             Text(
                 text = stringResource(R.string.vod_title),
-                style = JotaPlayerTypography.headlineLarge,
+                style = JuanPlayerTheme.typography.headlineLarge,
                 color = Primary
             )
 
@@ -77,7 +77,7 @@ fun VodScreen(
             ) {
                 Text(
                     text = if (uiState.isSearchActive) "\u2716" else "\uD83D\uDD0D",
-                    style = JotaPlayerTypography.titleMedium,
+                    style = JuanPlayerTheme.typography.titleMedium,
                     color = OnSurface
                 )
             }
@@ -94,12 +94,12 @@ fun VodScreen(
                     .fillMaxWidth()
                     .background(SurfaceVariant, RoundedCornerShape(8.dp))
                     .padding(horizontal = 16.dp, vertical = 12.dp),
-                textStyle = JotaPlayerTypography.bodyMedium.copy(color = OnSurface),
+                textStyle = JuanPlayerTheme.typography.bodyMedium.copy(color = OnSurface),
                 decorationBox = { innerTextField ->
                     if (uiState.searchQuery.isEmpty()) {
                         Text(
                             text = stringResource(R.string.vod_search_hint),
-                            style = JotaPlayerTypography.bodyMedium,
+                            style = JuanPlayerTheme.typography.bodyMedium,
                             color = OnSurfaceVariant
                         )
                     }
@@ -143,7 +143,7 @@ fun VodScreen(
             ) {
                 Text(
                     text = stringResource(R.string.vod_empty),
-                    style = JotaPlayerTypography.bodyLarge,
+                    style = JuanPlayerTheme.typography.bodyLarge,
                     color = OnSurfaceVariant
                 )
             }
@@ -192,7 +192,7 @@ private fun CategoryChip(
     ) {
         Text(
             text = label,
-            style = JotaPlayerTypography.labelLarge,
+            style = JuanPlayerTheme.typography.labelLarge,
             color = if (isSelected) Primary else OnSurface,
             modifier = Modifier.padding(horizontal = 8.dp)
         )
@@ -238,7 +238,7 @@ private fun VodItem(
                     ) {
                         Text(
                             text = stringResource(R.string.vod_resume),
-                            style = JotaPlayerTypography.labelSmall,
+                            style = JuanPlayerTheme.typography.labelSmall,
                             color = OnSurface
                         )
                     }
@@ -250,7 +250,7 @@ private fun VodItem(
             // Title
             Text(
                 text = channel.name,
-                style = JotaPlayerTypography.bodyMedium,
+                style = JuanPlayerTheme.typography.bodyMedium,
                 color = OnSurface,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
@@ -260,7 +260,7 @@ private fun VodItem(
             if (channel.groupTitle != null) {
                 Text(
                     text = channel.groupTitle,
-                    style = JotaPlayerTypography.labelSmall,
+                    style = JuanPlayerTheme.typography.labelSmall,
                     color = OnSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis

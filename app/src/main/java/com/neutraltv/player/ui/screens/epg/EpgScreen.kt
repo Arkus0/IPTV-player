@@ -34,7 +34,7 @@ import com.neutraltv.player.data.local.entity.ProgramEntity
 import com.neutraltv.player.ui.components.LoadingIndicator
 import com.neutraltv.player.ui.theme.Background
 import com.neutraltv.player.ui.theme.FocusBorder
-import com.neutraltv.player.ui.theme.JotaPlayerTypography
+import com.neutraltv.player.ui.theme.JuanPlayerTheme
 import com.neutraltv.player.ui.theme.OnSurface
 import com.neutraltv.player.ui.theme.OnSurfaceVariant
 import com.neutraltv.player.ui.theme.Primary
@@ -66,7 +66,7 @@ fun EpgScreen(
         // Title bar
         Text(
             text = stringResource(R.string.epg_title),
-            style = JotaPlayerTypography.headlineLarge,
+            style = JuanPlayerTheme.typography.headlineLarge,
             color = Primary
         )
 
@@ -86,7 +86,7 @@ fun EpgScreen(
                 ) {
                     Text(
                         text = stringResource(R.string.epg_no_data),
-                        style = JotaPlayerTypography.bodyLarge,
+                        style = JuanPlayerTheme.typography.bodyLarge,
                         color = OnSurfaceVariant
                     )
                 }
@@ -148,7 +148,7 @@ private fun EpgGrid(
                 ) {
                     Text(
                         text = channel.name,
-                        style = JotaPlayerTypography.labelMedium,
+                        style = JuanPlayerTheme.typography.labelMedium,
                         color = OnSurface,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
@@ -218,7 +218,7 @@ private fun TimeHeader(
             ) {
                 Text(
                     text = timeFormat.format(Date(time)),
-                    style = JotaPlayerTypography.labelSmall,
+                    style = JuanPlayerTheme.typography.labelSmall,
                     color = OnSurfaceVariant,
                     modifier = Modifier.padding(start = 4.dp)
                 )
@@ -257,7 +257,7 @@ private fun ProgramRow(
             ) {
                 Text(
                     text = stringResource(R.string.epg_no_data),
-                    style = JotaPlayerTypography.labelSmall,
+                    style = JuanPlayerTheme.typography.labelSmall,
                     color = OnSurfaceVariant
                 )
             }
@@ -291,14 +291,14 @@ private fun ProgramRow(
                         ) {
                             Text(
                                 text = program.title,
-                                style = JotaPlayerTypography.labelSmall,
+                                style = JuanPlayerTheme.typography.labelSmall,
                                 color = if (isCurrent) FocusBorder else OnSurface,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
                                 text = "${timeFormat.format(Date(program.startTime))} - ${timeFormat.format(Date(program.endTime))}",
-                                style = JotaPlayerTypography.labelSmall,
+                                style = JuanPlayerTheme.typography.labelSmall,
                                 color = OnSurfaceVariant
                             )
                         }
@@ -319,19 +319,19 @@ private fun ProgramInfoBar(program: ProgramEntity) {
     ) {
         Text(
             text = program.title,
-            style = JotaPlayerTypography.titleMedium,
+            style = JuanPlayerTheme.typography.titleMedium,
             color = OnSurface
         )
         Row {
             Text(
                 text = "${timeFormat.format(Date(program.startTime))} - ${timeFormat.format(Date(program.endTime))}",
-                style = JotaPlayerTypography.labelMedium,
+                style = JuanPlayerTheme.typography.labelMedium,
                 color = OnSurfaceVariant
             )
             if (program.category != null) {
                 Text(
                     text = " · ${program.category}",
-                    style = JotaPlayerTypography.labelMedium,
+                    style = JuanPlayerTheme.typography.labelMedium,
                     color = OnSurfaceVariant
                 )
             }
@@ -340,7 +340,7 @@ private fun ProgramInfoBar(program: ProgramEntity) {
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = program.description,
-                style = JotaPlayerTypography.bodySmall,
+                style = JuanPlayerTheme.typography.bodySmall,
                 color = OnSurfaceVariant,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis

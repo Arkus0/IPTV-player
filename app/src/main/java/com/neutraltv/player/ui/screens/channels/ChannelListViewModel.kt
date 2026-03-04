@@ -3,6 +3,8 @@ package com.neutraltv.player.ui.screens.channels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.neutraltv.player.data.local.entity.ChannelEntity
+import com.neutraltv.player.data.preferences.PreferencesRepository
+import com.neutraltv.player.data.repository.EpgRepository
 import com.neutraltv.player.data.repository.FavoriteRepository
 import com.neutraltv.player.data.repository.PlaylistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -10,6 +12,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,6 +21,7 @@ data class ChannelListUiState(
     val selectedGroup: String? = null,
     val channels: List<ChannelEntity> = emptyList(),
     val favoriteIds: Set<Long> = emptySet(),
+    val currentPrograms: Map<String, String> = emptyMap(),
     val isLoading: Boolean = true,
     val playlistId: Long? = null,
     val searchQuery: String = "",
@@ -27,7 +31,9 @@ data class ChannelListUiState(
 @HiltViewModel
 class ChannelListViewModel @Inject constructor(
     private val repository: PlaylistRepository,
-    private val favoriteRepository: FavoriteRepository
+    private val favoriteRepository: FavoriteRepository,
+    private val epgRepository: EpgRepository,
+    private val preferencesRepository: PreferencesRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChannelListUiState())
@@ -43,6 +49,11 @@ class ChannelListViewModel @Inject constructor(
                     loadGroups(playlist.id)
                     loadChannelsForGroup(playlist.id, null)
                     observeFavorites(playlist.id)
+                    val epgUrl = playlist.epgUrl
+                        ?: preferencesRepository.getUserPreferences().first().customEpgUrl.takeIf { it.isNotBlank() }
+                    if (epgUrl != null) {
+                        fetchEpgAndRefresh(playlist.id, epgUrl)
+                    }
                 }
             }
         }
@@ -71,6 +82,26 @@ class ChannelListViewModel @Inject constructor(
                     channels = channels,
                     isLoading = false
                 )
+                loadCurrentPrograms(channels)
+            }
+        }
+    }
+
+    private fun loadCurrentPrograms(channels: List<ChannelEntity>) {
+        viewModelScope.launch {
+            val epgIds = channels.mapNotNull { it.epgChannelId }
+            val programs = epgRepository.getCurrentProgramsMap(epgIds)
+            _uiState.value = _uiState.value.copy(currentPrograms = programs)
+        }
+    }
+
+    private fun fetchEpgAndRefresh(playlistId: Long, epgUrl: String) {
+        viewModelScope.launch {
+            epgRepository.loadEpg(playlistId, epgUrl)
+            // After EPG data is fetched, refresh current programs for visible channels
+            val channels = _uiState.value.channels
+            if (channels.isNotEmpty()) {
+                loadCurrentPrograms(channels)
             }
         }
     }
@@ -91,6 +122,7 @@ class ChannelListViewModel @Inject constructor(
                     selectedGroup = null,
                     isLoading = false
                 )
+                loadCurrentPrograms(channels)
             }
         }
     }
@@ -113,6 +145,7 @@ class ChannelListViewModel @Inject constructor(
                 viewModelScope.launch {
                     repository.getVisibleChannels(playlistId).collect { channels ->
                         _uiState.value = _uiState.value.copy(channels = channels, isLoading = false)
+                        loadCurrentPrograms(channels)
                     }
                 }
             }
@@ -132,10 +165,12 @@ class ChannelListViewModel @Inject constructor(
                 // Show all channels when query is empty
                 repository.getVisibleChannels(playlistId).collect { channels ->
                     _uiState.value = _uiState.value.copy(channels = channels, isLoading = false)
+                    loadCurrentPrograms(channels)
                 }
             } else {
                 repository.searchChannels(playlistId, query).collect { channels ->
                     _uiState.value = _uiState.value.copy(channels = channels, isLoading = false)
+                    loadCurrentPrograms(channels)
                 }
             }
         }

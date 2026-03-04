@@ -33,6 +33,8 @@ class M3uParser {
 
                 trimmed.startsWith("#EXTM3U") -> {
                     epgUrl = extractAttribute(trimmed, "url-tvg")
+                        ?: extractAttribute(trimmed, "tvg-url")
+                        ?: extractAttribute(trimmed, "x-tvg-url")
                     continue
                 }
 
@@ -94,11 +96,18 @@ class M3uParser {
             else -> "Unknown"
         }
 
+        // Fallback chain for EPG channel ID: tvg-id > tvg-name > sanitized display name
+        val effectiveTvgId = tvgId?.takeIf { it.isNotBlank() }
+            ?: tvgName?.takeIf { it.isNotBlank() }
+            ?: name.takeIf { it != "Unknown" }?.lowercase()
+                ?.replace(Regex("[^a-z0-9]"), "")
+                ?.takeIf { it.isNotBlank() }
+
         return ExtInfData(
             name = name,
             logoUrl = logoUrl?.takeIf { it.isNotBlank() },
             groupTitle = groupTitle?.takeIf { it.isNotBlank() },
-            tvgId = tvgId?.takeIf { it.isNotBlank() }
+            tvgId = effectiveTvgId
         )
     }
 

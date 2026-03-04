@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.tv.material3.Text
-import com.neutraltv.player.ui.theme.JotaPlayerTypography
+import com.neutraltv.player.ui.theme.JuanPlayerTheme
 import com.neutraltv.player.ui.theme.OnSurfaceVariant
 import com.neutraltv.player.ui.theme.Primary
 import kotlinx.coroutines.delay
@@ -44,14 +44,14 @@ fun SplashScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "JotaPlayer",
-            style = JotaPlayerTypography.headlineLarge,
+            text = "JuanPlayer",
+            style = JuanPlayerTheme.typography.headlineLarge,
             color = Primary
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "Tu reproductor IPTV",
-            style = JotaPlayerTypography.bodyMedium,
+            style = JuanPlayerTheme.typography.bodyMedium,
             color = OnSurfaceVariant
         )
     }

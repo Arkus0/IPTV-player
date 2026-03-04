@@ -5,9 +5,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-fun createTypography(fontScale: Float = 1.0f) = JotaPlayerTypographySet(fontScale)
+fun createTypography(fontScale: Float = 1.0f) = AppTypographySet(fontScale)
 
-class JotaPlayerTypographySet(private val fontScale: Float = 1.0f) {
+class AppTypographySet(private val fontScale: Float = 1.0f) {
     val headlineLarge = TextStyle(
         fontFamily = FontFamily.SansSerif,
         fontWeight = FontWeight.Bold,
@@ -72,6 +72,14 @@ class JotaPlayerTypographySet(private val fontScale: Float = 1.0f) {
         color = OnSurfaceVariant
     )
 
+    val bodySmall = TextStyle(
+        fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight.Normal,
+        fontSize = (14 * fontScale).sp,
+        lineHeight = (20 * fontScale).sp,
+        color = OnSurface
+    )
+
     val labelSmall = TextStyle(
         fontFamily = FontFamily.SansSerif,
         fontWeight = FontWeight.Medium,
@@ -80,6 +88,3 @@ class JotaPlayerTypographySet(private val fontScale: Float = 1.0f) {
         color = OnSurfaceVariant
     )
 }
-
-// Backwards-compatible default instance
-val JotaPlayerTypography = createTypography(1.0f)

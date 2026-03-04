@@ -5,6 +5,7 @@ import com.neutraltv.player.data.local.entity.ProgramEntity
 import com.neutraltv.player.data.parser.XmltvParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -77,13 +78,22 @@ class EpgRepository @Inject constructor(
         return programDao.getCurrentProgram(epgChannelId, now)
     }
 
-    fun getProgramsInRange(epgChannelId: String, startTime: Long, endTime: Long): Flow<List<ProgramEntity>> =
-        programDao.getProgramsInRange(epgChannelId, startTime, endTime)
+    suspend fun getCurrentProgramsMap(epgChannelIds: List<String>): Map<String, String> {
+        if (epgChannelIds.isEmpty()) return emptyMap()
+        val now = System.currentTimeMillis()
+        val programs = programDao.getCurrentProgramsForChannels(epgChannelIds, now)
+        return programs.associate { it.epgChannelId to it.title }
+    }
+
+    fun getProgramsInRange(epgChannelId: String, startTime: Long, endTime: Long): Flow<List<ProgramEntity>> = flow {
+        emit(programDao.getProgramsInRange(epgChannelId, startTime, endTime))
+    }
 
     fun getProgramsForChannelsInRange(
         epgChannelIds: List<String>,
         startTime: Long,
         endTime: Long
-    ): Flow<List<ProgramEntity>> =
-        programDao.getProgramsForChannelsInRange(epgChannelIds, startTime, endTime)
+    ): Flow<List<ProgramEntity>> = flow {
+        emit(programDao.getProgramsForChannelsInRange(epgChannelIds, startTime, endTime))
+    }
 }

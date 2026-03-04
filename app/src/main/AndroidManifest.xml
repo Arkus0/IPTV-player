@@ -12,7 +12,7 @@
         android:required="false" />
 
     <application
-        android:name=".JotaPlayerApp"
+        android:name=".JuanPlayerApp"
         android:allowBackup="true"
         android:banner="@drawable/ic_app_banner"
         android:icon="@drawable/ic_launcher_foreground"

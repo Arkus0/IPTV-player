@@ -5,28 +5,39 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 
-val LocalJotaPlayerColors = staticCompositionLocalOf { PurpleDarkColors }
+val LocalAppColors = staticCompositionLocalOf { PurpleDarkColors }
 val LocalFontScale = staticCompositionLocalOf { 1.0f }
+val LocalAppTypography = staticCompositionLocalOf { AppTypographySet(1.0f) }
 
-object JotaPlayerTheme {
-    val colors: JotaPlayerColors
-        @Composable get() = LocalJotaPlayerColors.current
+object JuanPlayerTheme {
+    val colors: AppColors
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalAppColors.current
+
+    val typography: AppTypographySet
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalAppTypography.current
 }
 
 @Composable
-fun JotaPlayerTheme(
+fun JuanPlayerTheme(
     themeId: String = "purple_dark",
     fontScale: Float = 1.0f,
     content: @Composable () -> Unit
 ) {
     val colors = getThemeColors(themeId)
+    val typography = createTypography(fontScale)
 
     CompositionLocalProvider(
-        LocalJotaPlayerColors provides colors,
-        LocalFontScale provides fontScale
+        LocalAppColors provides colors,
+        LocalFontScale provides fontScale,
+        LocalAppTypography provides typography
     ) {
         Box(
             modifier = Modifier

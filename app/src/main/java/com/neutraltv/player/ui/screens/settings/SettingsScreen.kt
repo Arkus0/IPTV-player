@@ -17,7 +17,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -30,6 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.tv.material3.Border
@@ -42,8 +48,8 @@ import com.neutraltv.player.R
 import com.neutraltv.player.ui.theme.BlueDarkColors
 import com.neutraltv.player.ui.theme.Error
 import com.neutraltv.player.ui.theme.FocusBorder
-import com.neutraltv.player.ui.theme.JotaPlayerColors
-import com.neutraltv.player.ui.theme.JotaPlayerTypography
+import com.neutraltv.player.ui.theme.AppColors
+import com.neutraltv.player.ui.theme.JuanPlayerTheme
 import com.neutraltv.player.ui.theme.LightColors
 import com.neutraltv.player.ui.theme.OledBlackColors
 import com.neutraltv.player.ui.theme.OnSurface
@@ -77,7 +83,7 @@ fun SettingsScreen(
     ) {
         Text(
             text = stringResource(R.string.settings),
-            style = JotaPlayerTypography.headlineLarge,
+            style = JuanPlayerTheme.typography.headlineLarge,
             color = Primary
         )
 
@@ -86,7 +92,7 @@ fun SettingsScreen(
         // Theme section
         Text(
             text = stringResource(R.string.settings_theme),
-            style = JotaPlayerTypography.titleMedium,
+            style = JuanPlayerTheme.typography.titleMedium,
             color = OnSurface
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -128,7 +134,7 @@ fun SettingsScreen(
         // Font size section
         Text(
             text = stringResource(R.string.settings_font_size),
-            style = JotaPlayerTypography.titleMedium,
+            style = JuanPlayerTheme.typography.titleMedium,
             color = OnSurface
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -153,6 +159,77 @@ fun SettingsScreen(
                 isSelected = settingsState.currentFontScale == 1.4f,
                 onClick = { viewModel.selectFontScale(1.4f) }
             )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // EPG URL section
+        Text(
+            text = stringResource(R.string.settings_epg_url),
+            style = JuanPlayerTheme.typography.titleMedium,
+            color = OnSurface
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = stringResource(R.string.settings_epg_url_desc),
+            style = JuanPlayerTheme.typography.labelMedium,
+            color = OnSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+
+        var epgUrlText by remember(settingsState.customEpgUrl) {
+            mutableStateOf(settingsState.customEpgUrl)
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            OutlinedTextField(
+                value = epgUrlText,
+                onValueChange = { epgUrlText = it },
+                label = {
+                    Text(
+                        text = stringResource(R.string.settings_epg_url_hint),
+                        color = OnSurfaceVariant
+                    )
+                },
+                modifier = Modifier.weight(1f),
+                singleLine = true,
+                textStyle = JuanPlayerTheme.typography.bodyMedium.copy(color = OnSurface),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Uri,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { viewModel.saveCustomEpgUrl(epgUrlText) }
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = FocusBorder,
+                    unfocusedBorderColor = OnSurfaceVariant,
+                    cursorColor = Primary,
+                    focusedLabelColor = FocusBorder,
+                    unfocusedLabelColor = OnSurfaceVariant,
+                    focusedContainerColor = Background,
+                    unfocusedContainerColor = Background
+                ),
+                shape = RoundedCornerShape(8.dp)
+            )
+            Button(
+                onClick = { viewModel.saveCustomEpgUrl(epgUrlText) },
+                colors = ButtonDefaults.colors(
+                    containerColor = Primary,
+                    contentColor = Background,
+                    focusedContainerColor = FocusBorder,
+                    focusedContentColor = Background
+                )
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_epg_url_save),
+                    style = JuanPlayerTheme.typography.labelLarge,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -198,7 +275,7 @@ fun SettingsScreen(
         // Version
         Text(
             text = stringResource(R.string.settings_version, "1.0.0"),
-            style = JotaPlayerTypography.labelMedium,
+            style = JuanPlayerTheme.typography.labelMedium,
             color = OnSurfaceVariant,
             modifier = Modifier.padding(start = 16.dp)
         )
@@ -222,7 +299,7 @@ fun SettingsScreen(
                 ) {
                     Text(
                         text = stringResource(R.string.settings_delete_confirm),
-                        style = JotaPlayerTypography.bodyLarge,
+                        style = JuanPlayerTheme.typography.bodyLarge,
                         color = OnSurface
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -241,7 +318,7 @@ fun SettingsScreen(
                         ) {
                             Text(
                                 text = stringResource(R.string.settings_cancel),
-                                style = JotaPlayerTypography.labelLarge,
+                                style = JuanPlayerTheme.typography.labelLarge,
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                             )
                         }
@@ -263,7 +340,7 @@ fun SettingsScreen(
                         ) {
                             Text(
                                 text = stringResource(R.string.settings_confirm),
-                                style = JotaPlayerTypography.labelLarge,
+                                style = JuanPlayerTheme.typography.labelLarge,
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                             )
                         }
@@ -303,14 +380,14 @@ private fun SettingsItem(
         ) {
             Text(
                 text = title,
-                style = JotaPlayerTypography.bodyLarge,
+                style = JuanPlayerTheme.typography.bodyLarge,
                 color = OnSurface
             )
             if (subtitle != null) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = subtitle,
-                    style = JotaPlayerTypography.labelMedium,
+                    style = JuanPlayerTheme.typography.labelMedium,
                     color = OnSurfaceVariant
                 )
             }
@@ -322,7 +399,7 @@ private fun SettingsItem(
 private fun ThemeCard(
     label: String,
     themeId: String,
-    colors: JotaPlayerColors,
+    colors: AppColors,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
@@ -375,7 +452,7 @@ private fun ThemeCard(
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = label,
-                style = JotaPlayerTypography.labelMedium,
+                style = JuanPlayerTheme.typography.labelMedium,
                 color = if (isSelected) Primary else OnSurfaceVariant
             )
         }
@@ -412,7 +489,7 @@ private fun FontScaleOption(
     ) {
         Text(
             text = label,
-            style = JotaPlayerTypography.labelLarge,
+            style = JuanPlayerTheme.typography.labelLarge,
             color = if (isSelected) Primary else OnSurface,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
         )

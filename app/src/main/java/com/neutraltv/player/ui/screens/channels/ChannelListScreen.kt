@@ -44,10 +44,11 @@ import com.neutraltv.player.R
 import com.neutraltv.player.ui.components.LoadingIndicator
 import com.neutraltv.player.ui.theme.Background
 import com.neutraltv.player.ui.theme.FocusBorder
-import com.neutraltv.player.ui.theme.JotaPlayerTypography
+import com.neutraltv.player.ui.theme.JuanPlayerTheme
 import com.neutraltv.player.ui.theme.OnSurfaceVariant
 import com.neutraltv.player.ui.theme.Primary
 import com.neutraltv.player.ui.theme.OnSurface
+import com.neutraltv.player.ui.theme.Secondary
 import com.neutraltv.player.ui.theme.Surface as SurfaceColor
 import com.neutraltv.player.ui.theme.SurfaceVariant
 
@@ -107,7 +108,7 @@ fun ChannelListScreen(
                     },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    textStyle = JotaPlayerTypography.bodyLarge.copy(color = OnSurface),
+                    textStyle = JuanPlayerTheme.typography.bodyLarge.copy(color = OnSurface),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -135,14 +136,14 @@ fun ChannelListScreen(
                             stringResource(R.string.channel_count, uiState.channels.size)
                         else
                             uiState.selectedGroup ?: stringResource(R.string.tv_live),
-                        style = JotaPlayerTypography.titleLarge,
+                        style = JuanPlayerTheme.typography.titleLarge,
                         color = Primary
                     )
                     if (!uiState.isSearchActive) {
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = stringResource(R.string.channel_count, uiState.channels.size),
-                            style = JotaPlayerTypography.labelMedium,
+                            style = JuanPlayerTheme.typography.labelMedium,
                             color = OnSurfaceVariant
                         )
                     }
@@ -165,7 +166,7 @@ fun ChannelListScreen(
                 ) {
                     Text(
                         text = if (uiState.isSearchActive) "\u2716" else "\uD83D\uDD0D",
-                        style = JotaPlayerTypography.titleMedium,
+                        style = JuanPlayerTheme.typography.titleMedium,
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
                     )
                 }
@@ -189,7 +190,9 @@ fun ChannelListScreen(
                             logoUrl = channel.logoUrl,
                             groupTitle = channel.groupTitle,
                             isFavorite = channel.id in uiState.favoriteIds,
-                            onClick = { onChannelSelected(channel.id) }
+                            currentProgram = channel.epgChannelId?.let { uiState.currentPrograms[it] },
+                            onClick = { onChannelSelected(channel.id) },
+                            onToggleFavorite = { viewModel.toggleFavorite(channel.id) }
                         )
                     }
                 }
@@ -257,7 +260,7 @@ private fun GroupItem(
     ) {
         Text(
             text = name,
-            style = JotaPlayerTypography.bodyMedium,
+            style = JuanPlayerTheme.typography.bodyMedium,
             color = if (isSelected) Primary else OnSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
             maxLines = 1,
@@ -273,7 +276,9 @@ private fun ChannelItem(
     logoUrl: String?,
     groupTitle: String?,
     isFavorite: Boolean = false,
-    onClick: () -> Unit
+    currentProgram: String? = null,
+    onClick: () -> Unit,
+    onToggleFavorite: () -> Unit = {}
 ) {
     Surface(
         onClick = onClick,
@@ -302,7 +307,7 @@ private fun ChannelItem(
             // Channel number
             Text(
                 text = number.toString().padStart(3, ' '),
-                style = JotaPlayerTypography.labelMedium,
+                style = JuanPlayerTheme.typography.labelMedium,
                 color = OnSurfaceVariant,
                 modifier = Modifier.width(48.dp)
             )
@@ -320,18 +325,26 @@ private fun ChannelItem(
                 Spacer(modifier = Modifier.width(12.dp))
             }
 
-            // Channel name and group
+            // Channel name, group, and current program
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = name,
-                    style = JotaPlayerTypography.bodyLarge,
+                    style = JuanPlayerTheme.typography.bodyLarge,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                if (groupTitle != null) {
+                if (currentProgram != null) {
+                    Text(
+                        text = "${stringResource(R.string.epg_now)}: $currentProgram",
+                        style = JuanPlayerTheme.typography.labelMedium,
+                        color = Secondary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                } else if (groupTitle != null) {
                     Text(
                         text = groupTitle,
-                        style = JotaPlayerTypography.labelMedium,
+                        style = JuanPlayerTheme.typography.labelMedium,
                         color = OnSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -339,12 +352,28 @@ private fun ChannelItem(
                 }
             }
 
-            // Favorite indicator
-            if (isFavorite) {
+            // Favorite toggle button
+            Spacer(modifier = Modifier.width(8.dp))
+            Surface(
+                onClick = onToggleFavorite,
+                shape = ClickableSurfaceDefaults.shape(shape = CircleShape),
+                colors = ClickableSurfaceDefaults.colors(
+                    containerColor = SurfaceColor,
+                    focusedContainerColor = SurfaceVariant,
+                    pressedContainerColor = SurfaceVariant
+                ),
+                border = ClickableSurfaceDefaults.border(
+                    focusedBorder = Border(
+                        border = BorderStroke(2.dp, FocusBorder),
+                        shape = CircleShape
+                    )
+                )
+            ) {
                 Text(
-                    text = "\u2605",
-                    style = JotaPlayerTypography.titleMedium,
-                    color = Primary
+                    text = if (isFavorite) "\u2605" else "\u2606",
+                    style = JuanPlayerTheme.typography.titleMedium,
+                    color = if (isFavorite) Primary else OnSurfaceVariant,
+                    modifier = Modifier.padding(8.dp)
                 )
             }
         }

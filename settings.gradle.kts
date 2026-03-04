@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "JotaPlayer"
+rootProject.name = "JuanPlayer"
 include(":app")

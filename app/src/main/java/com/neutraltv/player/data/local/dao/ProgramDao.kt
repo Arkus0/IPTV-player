@@ -51,4 +51,10 @@ interface ProgramDao {
         startTime: Long,
         endTime: Long
     ): List<ProgramEntity>
+    @Query("""
+        SELECT * FROM programs
+        WHERE epgChannelId IN (:epgChannelIds)
+        AND startTime <= :currentTime AND endTime > :currentTime
+    """)
+    suspend fun getCurrentProgramsForChannels(epgChannelIds: List<String>, currentTime: Long): List<ProgramEntity>
 }

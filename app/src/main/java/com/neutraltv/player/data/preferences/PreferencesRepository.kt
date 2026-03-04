@@ -16,12 +16,14 @@ class PreferencesRepository @Inject constructor(
 ) {
     private val themeIdKey = stringPreferencesKey("theme_id")
     private val fontScaleKey = floatPreferencesKey("font_scale")
+    private val customEpgUrlKey = stringPreferencesKey("custom_epg_url")
 
     fun getUserPreferences(): Flow<UserPreferences> {
         return dataStore.data.map { prefs ->
             UserPreferences(
                 themeId = prefs[themeIdKey] ?: "purple_dark",
-                fontScale = prefs[fontScaleKey] ?: 1.0f
+                fontScale = prefs[fontScaleKey] ?: 1.0f,
+                customEpgUrl = prefs[customEpgUrlKey] ?: ""
             )
         }
     }
@@ -35,6 +37,12 @@ class PreferencesRepository @Inject constructor(
     suspend fun setFontScale(scale: Float) {
         dataStore.edit { prefs ->
             prefs[fontScaleKey] = scale
+        }
+    }
+
+    suspend fun setCustomEpgUrl(url: String) {
+        dataStore.edit { prefs ->
+            prefs[customEpgUrlKey] = url
         }
     }
 }

@@ -39,7 +39,7 @@ import com.neutraltv.player.ui.components.LoadingIndicator
 import com.neutraltv.player.ui.theme.Background
 import com.neutraltv.player.ui.theme.Error
 import com.neutraltv.player.ui.theme.FocusBorder
-import com.neutraltv.player.ui.theme.JotaPlayerTypography
+import com.neutraltv.player.ui.theme.JuanPlayerTheme
 import com.neutraltv.player.ui.theme.OnSurface
 import com.neutraltv.player.ui.theme.OnSurfaceVariant
 import com.neutraltv.player.ui.theme.Primary
@@ -76,8 +76,8 @@ fun PlaylistSelectorScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = stringResource(R.string.playlists),
-                style = JotaPlayerTypography.headlineLarge,
+                text = stringResource(R.string.playlists_title),
+                style = JuanPlayerTheme.typography.headlineLarge,
                 color = Primary
             )
             Button(
@@ -90,8 +90,8 @@ fun PlaylistSelectorScreen(
                 )
             ) {
                 Text(
-                    text = stringResource(R.string.add_playlist),
-                    style = JotaPlayerTypography.labelLarge,
+                    text = stringResource(R.string.playlists_add),
+                    style = JuanPlayerTheme.typography.labelLarge,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                 )
             }
@@ -101,8 +101,8 @@ fun PlaylistSelectorScreen(
 
         if (uiState.playlists.isEmpty()) {
             Text(
-                text = stringResource(R.string.no_playlists),
-                style = JotaPlayerTypography.bodyLarge,
+                text = stringResource(R.string.playlists_no_playlists),
+                style = JuanPlayerTheme.typography.bodyLarge,
                 color = OnSurfaceVariant
             )
         } else {
@@ -140,8 +140,8 @@ fun PlaylistSelectorScreen(
             ) {
                 Column(modifier = Modifier.padding(24.dp)) {
                     Text(
-                        text = stringResource(R.string.delete_playlist_confirm, playlist.name),
-                        style = JotaPlayerTypography.bodyLarge,
+                        text = stringResource(R.string.playlists_delete_confirm, playlist.name),
+                        style = JuanPlayerTheme.typography.bodyLarge,
                         color = OnSurface
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -158,7 +158,7 @@ fun PlaylistSelectorScreen(
                                 focusedContentColor = Background
                             )
                         ) {
-                            Text(stringResource(R.string.settings_cancel), style = JotaPlayerTypography.labelLarge)
+                            Text(stringResource(R.string.settings_cancel), style = JuanPlayerTheme.typography.labelLarge)
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Button(
@@ -176,7 +176,7 @@ fun PlaylistSelectorScreen(
                                 focusedContentColor = OnSurface
                             )
                         ) {
-                            Text(stringResource(R.string.settings_confirm), style = JotaPlayerTypography.labelLarge)
+                            Text(stringResource(R.string.settings_confirm), style = JuanPlayerTheme.typography.labelLarge)
                         }
                     }
                 }
@@ -218,7 +218,7 @@ private fun PlaylistItem(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = playlist.name,
-                        style = JotaPlayerTypography.bodyLarge,
+                        style = JuanPlayerTheme.typography.bodyLarge,
                         color = OnSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -227,7 +227,7 @@ private fun PlaylistItem(
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = "\u2713", // checkmark
-                            style = JotaPlayerTypography.bodyLarge,
+                            style = JuanPlayerTheme.typography.bodyLarge,
                             color = Secondary
                         )
                     }
@@ -235,7 +235,7 @@ private fun PlaylistItem(
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = stringResource(R.string.channel_count, playlist.channelCount),
-                    style = JotaPlayerTypography.labelMedium,
+                    style = JuanPlayerTheme.typography.labelMedium,
                     color = OnSurfaceVariant
                 )
             }
