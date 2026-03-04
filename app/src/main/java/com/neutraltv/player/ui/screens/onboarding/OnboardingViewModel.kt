@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class OnboardingUiState(
-    val name: String = "Mi Lista",
+    val name: String = "",
     val url: String = "",
     val isLoading: Boolean = false,
     val error: String? = null,
