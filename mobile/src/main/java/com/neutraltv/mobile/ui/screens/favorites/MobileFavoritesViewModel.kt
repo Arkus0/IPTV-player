@@ -13,7 +13,8 @@ import javax.inject.Inject
 data class FavoritesUiState(
     val favorites: List<FavoriteDto> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val searchQuery: String = ""
 )
 
 @HiltViewModel
@@ -39,6 +40,21 @@ class MobileFavoritesViewModel @Inject constructor(
                 .onFailure { e ->
                     _uiState.value = FavoritesUiState(error = e.message ?: "Error al cargar favoritos")
                 }
+        }
+    }
+
+    fun search(query: String) {
+        _uiState.value = _uiState.value.copy(searchQuery = query)
+    }
+
+    fun getFilteredFavorites(): List<FavoriteDto> {
+        val query = _uiState.value.searchQuery
+        return if (query.isBlank()) {
+            _uiState.value.favorites
+        } else {
+            _uiState.value.favorites.filter {
+                it.channelName.contains(query, ignoreCase = true)
+            }
         }
     }
 

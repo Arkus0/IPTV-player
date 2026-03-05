@@ -2,7 +2,9 @@ package com.neutraltv.mobile.ui.screens.player
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.neutraltv.core.model.CommandType
 import com.neutraltv.core.model.PlaybackStateDto
+import com.neutraltv.core.model.RemoteCommand
 import com.neutraltv.core.model.TransferDirection
 import com.neutraltv.core.model.TransferRequest
 import com.neutraltv.mobile.data.remote.ConnectionState
@@ -84,6 +86,30 @@ class MobilePlayerViewModel @Inject constructor(
                 playbackState = playbackState
             )
             tvApiClient.requestTransfer(request)
+        }
+    }
+
+    fun seekForward() {
+        viewModelScope.launch {
+            tvApiClient.sendCommand(RemoteCommand(type = CommandType.SEEK_FORWARD))
+        }
+    }
+
+    fun seekBackward() {
+        viewModelScope.launch {
+            tvApiClient.sendCommand(RemoteCommand(type = CommandType.SEEK_BACKWARD))
+        }
+    }
+
+    fun volumeUp() {
+        viewModelScope.launch {
+            tvApiClient.sendCommand(RemoteCommand(type = CommandType.VOLUME_UP))
+        }
+    }
+
+    fun volumeDown() {
+        viewModelScope.launch {
+            tvApiClient.sendCommand(RemoteCommand(type = CommandType.VOLUME_DOWN))
         }
     }
 

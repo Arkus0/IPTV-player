@@ -46,6 +46,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -59,6 +61,12 @@ fun RemoteScreen(
     viewModel: RemoteViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
+    val haptic = LocalHapticFeedback.current
+
+    fun hapticCommand(type: CommandType) {
+        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        viewModel.sendCommand(type)
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -132,7 +140,7 @@ fun RemoteScreen(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 // Up - Channel up
                 FilledIconButton(
-                    onClick = { viewModel.sendCommand(CommandType.CHANNEL_UP) },
+                    onClick = { hapticCommand(CommandType.CHANNEL_UP) },
                     modifier = Modifier.size(64.dp)
                 ) {
                     Icon(Icons.Default.KeyboardArrowUp, "Canal arriba", Modifier.size(36.dp))
@@ -146,7 +154,7 @@ fun RemoteScreen(
                 ) {
                     // Left - Seek back
                     FilledIconButton(
-                        onClick = { viewModel.sendCommand(CommandType.SEEK_BACKWARD) },
+                        onClick = { hapticCommand(CommandType.SEEK_BACKWARD) },
                         modifier = Modifier.size(64.dp)
                     ) {
                         Icon(Icons.Default.KeyboardArrowLeft, "Retroceder", Modifier.size(36.dp))
@@ -154,7 +162,7 @@ fun RemoteScreen(
 
                     // OK button
                     FilledIconButton(
-                        onClick = { viewModel.sendCommand(CommandType.OK) },
+                        onClick = { hapticCommand(CommandType.OK) },
                         modifier = Modifier.size(80.dp),
                         colors = IconButtonDefaults.filledIconButtonColors(
                             containerColor = MaterialTheme.colorScheme.primary
@@ -165,7 +173,7 @@ fun RemoteScreen(
 
                     // Right - Seek forward
                     FilledIconButton(
-                        onClick = { viewModel.sendCommand(CommandType.SEEK_FORWARD) },
+                        onClick = { hapticCommand(CommandType.SEEK_FORWARD) },
                         modifier = Modifier.size(64.dp)
                     ) {
                         Icon(Icons.Default.KeyboardArrowRight, "Avanzar", Modifier.size(36.dp))
@@ -176,7 +184,7 @@ fun RemoteScreen(
 
                 // Down - Channel down
                 FilledIconButton(
-                    onClick = { viewModel.sendCommand(CommandType.CHANNEL_DOWN) },
+                    onClick = { hapticCommand(CommandType.CHANNEL_DOWN) },
                     modifier = Modifier.size(64.dp)
                 ) {
                     Icon(Icons.Default.KeyboardArrowDown, "Canal abajo", Modifier.size(36.dp))
@@ -191,18 +199,18 @@ fun RemoteScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 // Back
-                IconButton(onClick = { viewModel.sendCommand(CommandType.BACK) }) {
+                IconButton(onClick = { hapticCommand(CommandType.BACK) }) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, "Atrás")
                 }
 
                 // Volume Down
-                IconButton(onClick = { viewModel.sendCommand(CommandType.VOLUME_DOWN) }) {
+                IconButton(onClick = { hapticCommand(CommandType.VOLUME_DOWN) }) {
                     Icon(Icons.Default.VolumeDown, "Volumen -")
                 }
 
                 // Play/Pause
                 FilledIconButton(
-                    onClick = { viewModel.sendCommand(CommandType.TOGGLE_PLAY_PAUSE) },
+                    onClick = { hapticCommand(CommandType.TOGGLE_PLAY_PAUSE) },
                     modifier = Modifier.size(56.dp)
                 ) {
                     val isPlaying = state.currentPlayback?.isPlaying ?: true
@@ -214,12 +222,12 @@ fun RemoteScreen(
                 }
 
                 // Volume Up
-                IconButton(onClick = { viewModel.sendCommand(CommandType.VOLUME_UP) }) {
+                IconButton(onClick = { hapticCommand(CommandType.VOLUME_UP) }) {
                     Icon(Icons.Default.VolumeUp, "Volumen +")
                 }
 
                 // Favorite
-                IconButton(onClick = { viewModel.sendCommand(CommandType.TOGGLE_FAVORITE) }) {
+                IconButton(onClick = { hapticCommand(CommandType.TOGGLE_FAVORITE) }) {
                     Icon(Icons.Default.FavoriteBorder, "Favorito")
                 }
             }
@@ -229,7 +237,10 @@ fun RemoteScreen(
             // Transfer to Mobile button
             if (state.isConnected && state.currentPlayback != null) {
                 ElevatedButton(
-                    onClick = { viewModel.requestTransferToMobile() },
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        viewModel.requestTransferToMobile()
+                    },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(Icons.Default.PhoneAndroid, contentDescription = null)

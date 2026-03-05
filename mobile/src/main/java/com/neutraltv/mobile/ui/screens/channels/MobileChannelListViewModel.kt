@@ -6,8 +6,12 @@ import com.neutraltv.core.model.ChannelDto
 import com.neutraltv.core.model.PlaylistDto
 import com.neutraltv.mobile.data.remote.TvApiClient
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,7 +34,31 @@ class MobileChannelListViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ChannelListUiState())
     val uiState: StateFlow<ChannelListUiState> = _uiState
 
+    private val _searchQuery = MutableStateFlow("")
+    private val _filteredChannels = MutableStateFlow<List<ChannelDto>>(emptyList())
+    val filteredChannels: StateFlow<List<ChannelDto>> = _filteredChannels
+
+    @OptIn(FlowPreview::class)
+    private fun setupSearchDebounce() {
+        viewModelScope.launch {
+            _searchQuery
+                .debounce(300)
+                .distinctUntilChanged()
+                .collect { query ->
+                    _filteredChannels.value = if (query.isBlank()) {
+                        _uiState.value.channels
+                    } else {
+                        _uiState.value.channels.filter {
+                            it.name.contains(query, ignoreCase = true) ||
+                                (it.groupTitle?.contains(query, ignoreCase = true) == true)
+                        }
+                    }
+                }
+        }
+    }
+
     init {
+        setupSearchDebounce()
         loadPlaylists()
     }
 
@@ -76,6 +104,14 @@ class MobileChannelListViewModel @Inject constructor(
                         channels = channels,
                         isLoading = false
                     )
+                    _filteredChannels.value = if (_searchQuery.value.isBlank()) {
+                        channels
+                    } else {
+                        channels.filter {
+                            it.name.contains(_searchQuery.value, ignoreCase = true) ||
+                                (it.groupTitle?.contains(_searchQuery.value, ignoreCase = true) == true)
+                        }
+                    }
                 },
                 onFailure = { e ->
                     _uiState.value = _uiState.value.copy(
@@ -94,21 +130,10 @@ class MobileChannelListViewModel @Inject constructor(
 
     fun search(query: String) {
         _uiState.value = _uiState.value.copy(searchQuery = query)
+        _searchQuery.value = query
     }
 
     fun refresh() {
         loadPlaylists()
-    }
-
-    fun getFilteredChannels(): List<ChannelDto> {
-        val query = _uiState.value.searchQuery
-        return if (query.isBlank()) {
-            _uiState.value.channels
-        } else {
-            _uiState.value.channels.filter {
-                it.name.contains(query, ignoreCase = true) ||
-                    (it.groupTitle?.contains(query, ignoreCase = true) == true)
-            }
-        }
     }
 }
