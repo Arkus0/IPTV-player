@@ -39,10 +39,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,6 +68,15 @@ fun RemoteScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val haptic = LocalHapticFeedback.current
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Show snackbar when userMessage changes
+    LaunchedEffect(state.userMessage) {
+        state.userMessage?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            viewModel.clearUserMessage()
+        }
+    }
 
     fun hapticCommand(type: CommandType) {
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -227,8 +242,16 @@ fun RemoteScreen(
                 }
 
                 // Favorite
-                IconButton(onClick = { hapticCommand(CommandType.TOGGLE_FAVORITE) }) {
-                    Icon(Icons.Default.FavoriteBorder, "Favorito")
+                IconButton(onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    viewModel.toggleFavorite()
+                }) {
+                    Icon(
+                        if (state.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        "Favorito",
+                        tint = if (state.isFavorite) MaterialTheme.colorScheme.error
+                            else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 
@@ -249,6 +272,12 @@ fun RemoteScreen(
                 }
             }
         }
+
+        // Snackbar host for feedback messages
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
 
         // Transfer overlay
         TransferOverlay(

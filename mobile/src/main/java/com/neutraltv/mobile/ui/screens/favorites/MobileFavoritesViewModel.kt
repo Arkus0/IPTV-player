@@ -2,7 +2,7 @@ package com.neutraltv.mobile.ui.screens.favorites
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.neutraltv.core.model.FavoriteDto
+import com.neutraltv.core.model.ChannelDto
 import com.neutraltv.mobile.data.remote.TvApiClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,10 +11,11 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class FavoritesUiState(
-    val favorites: List<FavoriteDto> = emptyList(),
+    val favorites: List<ChannelDto> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val searchQuery: String = ""
+    val searchQuery: String = "",
+    val userMessage: String? = null
 )
 
 @HiltViewModel
@@ -33,7 +34,18 @@ class MobileFavoritesViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            tvApiClient.getFavorites()
+            // Get playlists to find the active one
+            val playlistResult = tvApiClient.getPlaylists()
+            val playlist = playlistResult.getOrNull()
+                ?.firstOrNull { it.isActive }
+                ?: playlistResult.getOrNull()?.firstOrNull()
+
+            if (playlist == null) {
+                _uiState.value = FavoritesUiState(error = "No hay playlist activa")
+                return@launch
+            }
+
+            tvApiClient.getFavorites(playlist.id)
                 .onSuccess { favorites ->
                     _uiState.value = FavoritesUiState(favorites = favorites)
                 }
@@ -47,13 +59,13 @@ class MobileFavoritesViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(searchQuery = query)
     }
 
-    fun getFilteredFavorites(): List<FavoriteDto> {
+    fun getFilteredFavorites(): List<ChannelDto> {
         val query = _uiState.value.searchQuery
         return if (query.isBlank()) {
             _uiState.value.favorites
         } else {
             _uiState.value.favorites.filter {
-                it.channelName.contains(query, ignoreCase = true)
+                it.name.contains(query, ignoreCase = true)
             }
         }
     }
@@ -61,7 +73,17 @@ class MobileFavoritesViewModel @Inject constructor(
     fun removeFavorite(channelId: Long) {
         viewModelScope.launch {
             tvApiClient.toggleFavorite(channelId)
-                .onSuccess { loadFavorites() }
+                .onSuccess {
+                    _uiState.value = _uiState.value.copy(userMessage = "Eliminado de favoritos")
+                    loadFavorites()
+                }
+                .onFailure {
+                    _uiState.value = _uiState.value.copy(userMessage = "Error al eliminar favorito")
+                }
         }
+    }
+
+    fun clearUserMessage() {
+        _uiState.value = _uiState.value.copy(userMessage = null)
     }
 }

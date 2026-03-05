@@ -33,6 +33,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -65,9 +67,18 @@ fun MobileFavoritesScreen(
     val state by viewModel.uiState.collectAsState()
     val clipboardManager = LocalClipboardManager.current
     val haptic = LocalHapticFeedback.current
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
         viewModel.loadFavorites()
+    }
+
+    // Show snackbar when userMessage changes
+    LaunchedEffect(state.userMessage) {
+        state.userMessage?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            viewModel.clearUserMessage()
+        }
     }
 
     Scaffold(
@@ -75,7 +86,8 @@ fun MobileFavoritesScreen(
             TopAppBar(
                 title = { Text("Favoritos") }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         val filteredFavorites = viewModel.getFilteredFavorites()
 
@@ -160,7 +172,7 @@ fun MobileFavoritesScreen(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        items(filteredFavorites, key = { it.channelId }) { fav ->
+                        items(filteredFavorites, key = { it.id }) { fav ->
                             var showMenu by remember { mutableStateOf(false) }
 
                             Box {
@@ -170,7 +182,7 @@ fun MobileFavoritesScreen(
                                         .padding(horizontal = 16.dp, vertical = 4.dp)
                                         .combinedClickable(
                                             onClick = {
-                                                onChannelClick(fav.channelId, fav.streamUrl, fav.channelName)
+                                                onChannelClick(fav.id, fav.streamUrl, fav.name)
                                             },
                                             onLongClick = {
                                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -187,7 +199,7 @@ fun MobileFavoritesScreen(
                                         if (fav.logoUrl != null) {
                                             AsyncImage(
                                                 model = fav.logoUrl,
-                                                contentDescription = fav.channelName,
+                                                contentDescription = fav.name,
                                                 modifier = Modifier
                                                     .size(48.dp)
                                                     .clip(RoundedCornerShape(8.dp)),
@@ -198,14 +210,15 @@ fun MobileFavoritesScreen(
 
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(
-                                                text = fav.channelName,
+                                                text = fav.name,
                                                 style = MaterialTheme.typography.bodyLarge,
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis
                                             )
-                                            if (fav.groupTitle != null) {
+                                            val group = fav.groupTitle
+                                            if (group != null) {
                                                 Text(
-                                                    text = fav.groupTitle!!,
+                                                    text = group,
                                                     style = MaterialTheme.typography.bodySmall,
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                                 )
@@ -213,7 +226,7 @@ fun MobileFavoritesScreen(
                                         }
 
                                         IconButton(onClick = {
-                                            onChannelClick(fav.channelId, fav.streamUrl, fav.channelName)
+                                            onChannelClick(fav.id, fav.streamUrl, fav.name)
                                         }) {
                                             Icon(
                                                 Icons.Default.PlayArrow,
@@ -232,7 +245,7 @@ fun MobileFavoritesScreen(
                                         text = { Text("Reproducir") },
                                         onClick = {
                                             showMenu = false
-                                            onChannelClick(fav.channelId, fav.streamUrl, fav.channelName)
+                                            onChannelClick(fav.id, fav.streamUrl, fav.name)
                                         },
                                         leadingIcon = { Icon(Icons.Default.PlayArrow, contentDescription = null) }
                                     )
@@ -240,7 +253,7 @@ fun MobileFavoritesScreen(
                                         text = { Text("Quitar favorito") },
                                         onClick = {
                                             showMenu = false
-                                            viewModel.removeFavorite(fav.channelId)
+                                            viewModel.removeFavorite(fav.id)
                                         },
                                         leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null) }
                                     )
@@ -262,4 +275,3 @@ fun MobileFavoritesScreen(
         }
     }
 }
-

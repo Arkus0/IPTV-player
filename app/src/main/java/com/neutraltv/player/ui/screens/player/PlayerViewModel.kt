@@ -75,6 +75,13 @@ class PlayerViewModel @Inject constructor(
     private val _retryEvent = MutableSharedFlow<Unit>()
     val retryEvent: SharedFlow<Unit> = _retryEvent
 
+    // Events for commands that need to be handled at the Screen/Activity level
+    private val _seekEvent = MutableSharedFlow<Long>(extraBufferCapacity = 5)
+    val seekEvent: SharedFlow<Long> = _seekEvent
+
+    private val _volumeEvent = MutableSharedFlow<Int>(extraBufferCapacity = 5)
+    val volumeEvent: SharedFlow<Int> = _volumeEvent
+
     init {
         // Observe remote commands from companion mobile app
         viewModelScope.launch {
@@ -85,11 +92,14 @@ class PlayerViewModel @Inject constructor(
                     CommandType.TOGGLE_PLAY_PAUSE -> togglePlayPause()
                     CommandType.TOGGLE_FAVORITE -> toggleFavorite()
                     CommandType.PLAY_CHANNEL -> command.channelId?.let { loadChannel(it) }
-                    CommandType.SEEK_FORWARD -> { /* handled by PlayerScreen */ }
-                    CommandType.SEEK_BACKWARD -> { /* handled by PlayerScreen */ }
+                    CommandType.SEEK_FORWARD -> { _seekEvent.tryEmit(10_000L) }
+                    CommandType.SEEK_BACKWARD -> { _seekEvent.tryEmit(-10_000L) }
                     CommandType.BACK -> hideControls()
                     CommandType.OK -> toggleControls()
-                    else -> { /* volume handled at system level */ }
+                    CommandType.VOLUME_UP -> { _volumeEvent.tryEmit(1) }
+                    CommandType.VOLUME_DOWN -> { _volumeEvent.tryEmit(-1) }
+                    CommandType.MUTE -> { _volumeEvent.tryEmit(0) }
+                    else -> { /* HOME and other unhandled commands */ }
                 }
             }
         }
@@ -110,10 +120,11 @@ class PlayerViewModel @Inject constructor(
                         }
                     }
                     TransferDirection.TO_MOBILE -> {
-                        // TV sends playback to mobile — show overlay then stop
+                        // TV sends playback to mobile — show overlay, pause TV playback
                         _uiState.value = _uiState.value.copy(
                             showTransferOverlay = true,
-                            transferDirection = TransferDirection.TO_MOBILE
+                            transferDirection = TransferDirection.TO_MOBILE,
+                            isPlaying = false
                         )
                     }
                 }

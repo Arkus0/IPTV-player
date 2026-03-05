@@ -23,7 +23,9 @@ data class RemoteUiState(
     val tvDeviceName: String = "",
     val currentPlayback: PlaybackStateDto? = null,
     val showTransferOverlay: Boolean = false,
-    val transferredState: PlaybackStateDto? = null
+    val transferredState: PlaybackStateDto? = null,
+    val isFavorite: Boolean = false,
+    val userMessage: String? = null
 )
 
 @HiltViewModel
@@ -84,6 +86,29 @@ class RemoteViewModel @Inject constructor(
             val command = RemoteCommand(type = type, channelId = channelId)
             tvApiClient.sendCommand(command)
         }
+    }
+
+    fun toggleFavorite() {
+        val channelId = _uiState.value.currentPlayback?.channelId ?: return
+        viewModelScope.launch {
+            tvApiClient.toggleFavorite(channelId)
+                .onSuccess { result ->
+                    val isFav = result["isFavorite"] ?: false
+                    _uiState.value = _uiState.value.copy(
+                        isFavorite = isFav,
+                        userMessage = if (isFav) "Agregado a favoritos" else "Eliminado de favoritos"
+                    )
+                }
+                .onFailure {
+                    _uiState.value = _uiState.value.copy(
+                        userMessage = "Error al actualizar favorito"
+                    )
+                }
+        }
+    }
+
+    fun clearUserMessage() {
+        _uiState.value = _uiState.value.copy(userMessage = null)
     }
 
     fun requestTransferToMobile() {

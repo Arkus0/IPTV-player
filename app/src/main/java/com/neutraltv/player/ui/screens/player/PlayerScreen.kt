@@ -1,5 +1,6 @@
 package com.neutraltv.player.ui.screens.player
 
+import android.media.AudioManager
 import android.view.KeyEvent
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
@@ -162,6 +163,44 @@ fun PlayerScreen(
                 exoPlayer.setMediaItem(MediaItem.fromUri(channel.streamUrl))
                 exoPlayer.prepare()
                 viewModel.dismissError()
+            }
+        }
+    }
+
+    // Handle remote seek commands
+    LaunchedEffect(Unit) {
+        viewModel.seekEvent.collect { offsetMs ->
+            val newPos = (exoPlayer.currentPosition + offsetMs).coerceAtLeast(0)
+            if (uiState.isVod) {
+                exoPlayer.seekTo(newPos.coerceAtMost(exoPlayer.duration))
+            } else {
+                exoPlayer.seekTo(newPos)
+            }
+        }
+    }
+
+    // Handle remote volume commands
+    val audioManager = remember {
+        context.getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
+    }
+    LaunchedEffect(Unit) {
+        viewModel.volumeEvent.collect { direction ->
+            when (direction) {
+                1 -> audioManager.adjustStreamVolume(
+                    AudioManager.STREAM_MUSIC,
+                    AudioManager.ADJUST_RAISE,
+                    AudioManager.FLAG_SHOW_UI
+                )
+                -1 -> audioManager.adjustStreamVolume(
+                    AudioManager.STREAM_MUSIC,
+                    AudioManager.ADJUST_LOWER,
+                    AudioManager.FLAG_SHOW_UI
+                )
+                0 -> audioManager.adjustStreamVolume(
+                    AudioManager.STREAM_MUSIC,
+                    AudioManager.ADJUST_TOGGLE_MUTE,
+                    AudioManager.FLAG_SHOW_UI
+                )
             }
         }
     }

@@ -2,8 +2,10 @@ package com.neutraltv.mobile.ui.screens.channels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.neutraltv.core.model.CommandType
 import com.neutraltv.core.model.ChannelDto
 import com.neutraltv.core.model.PlaylistDto
+import com.neutraltv.core.model.RemoteCommand
 import com.neutraltv.mobile.data.remote.TvApiClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
@@ -11,7 +13,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -135,5 +136,20 @@ class MobileChannelListViewModel @Inject constructor(
 
     fun refresh() {
         loadPlaylists()
+    }
+
+    fun playOnTv(channelId: Long) {
+        viewModelScope.launch {
+            tvApiClient.sendCommand(RemoteCommand(type = CommandType.PLAY_CHANNEL, channelId = channelId))
+        }
+    }
+
+    fun toggleFavorite(channelId: Long) {
+        viewModelScope.launch {
+            tvApiClient.toggleFavorite(channelId)
+                .onSuccess {
+                    _uiState.value.selectedPlaylist?.let { loadChannels(it.id) }
+                }
+        }
     }
 }

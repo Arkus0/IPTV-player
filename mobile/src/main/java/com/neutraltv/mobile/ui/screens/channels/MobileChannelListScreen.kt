@@ -63,7 +63,6 @@ import coil.compose.AsyncImage
 fun MobileChannelListScreen(
     onChannelClick: (Long, String, String) -> Unit,
     onChannelPlayOnTv: (Long) -> Unit,
-    onToggleFavorite: ((Long) -> Unit)? = null,
     viewModel: MobileChannelListViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -183,7 +182,7 @@ fun MobileChannelListScreen(
                                     )
                                     if (channel.groupTitle != null) {
                                         Text(
-                                            text = channel.groupTitle,
+                                            text = channel.groupTitle ?: "",
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             maxLines = 1
@@ -203,7 +202,10 @@ fun MobileChannelListScreen(
 
                                 // Play on TV button
                                 IconButton(
-                                    onClick = { onChannelPlayOnTv(channel.id) }
+                                    onClick = {
+                                        viewModel.playOnTv(channel.id)
+                                        onChannelPlayOnTv(channel.id)
+                                    }
                                 ) {
                                     Icon(
                                         Icons.Default.Tv,
@@ -231,25 +233,24 @@ fun MobileChannelListScreen(
                                 text = { Text("Enviar a TV") },
                                 onClick = {
                                     showMenu = false
+                                    viewModel.playOnTv(channel.id)
                                     onChannelPlayOnTv(channel.id)
                                 },
                                 leadingIcon = { Icon(Icons.Default.Tv, contentDescription = null) }
                             )
-                            onToggleFavorite?.let { toggle ->
-                                DropdownMenuItem(
-                                    text = { Text(if (channel.isFavorite) "Quitar favorito" else "Agregar favorito") },
-                                    onClick = {
-                                        showMenu = false
-                                        toggle(channel.id)
-                                    },
-                                    leadingIcon = {
-                                        Icon(
-                                            if (channel.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                            contentDescription = null
-                                        )
-                                    }
-                                )
-                            }
+                            DropdownMenuItem(
+                                text = { Text(if (channel.isFavorite) "Quitar favorito" else "Agregar favorito") },
+                                onClick = {
+                                    showMenu = false
+                                    viewModel.toggleFavorite(channel.id)
+                                },
+                                leadingIcon = {
+                                    Icon(
+                                        if (channel.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                        contentDescription = null
+                                    )
+                                }
+                            )
                             DropdownMenuItem(
                                 text = { Text("Copiar URL") },
                                 onClick = {

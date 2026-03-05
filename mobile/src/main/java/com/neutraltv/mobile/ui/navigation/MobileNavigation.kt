@@ -31,7 +31,6 @@ import com.neutraltv.mobile.ui.screens.player.MobilePlayerScreen
 import com.neutraltv.mobile.ui.screens.remote.RemoteScreen
 import com.neutraltv.mobile.ui.screens.settings.MobileSettingsScreen
 import java.net.URLDecoder
-import java.net.URLEncoder
 
 private data class BottomNavItem(
     val route: String,
@@ -98,10 +97,8 @@ fun MobileNavigation() {
             composable(MobileScreen.Remote.route) {
                 RemoteScreen(
                     onNavigateToPlayer = { channelId, streamUrl, channelName ->
-                        val encodedUrl = URLEncoder.encode(streamUrl, "UTF-8")
-                        val encodedName = URLEncoder.encode(channelName, "UTF-8")
                         navController.navigate(
-                            MobileScreen.Player.createRoute(channelId, encodedUrl, encodedName)
+                            MobileScreen.Player.createRoute(channelId, streamUrl, channelName)
                         )
                     }
                 )
@@ -110,11 +107,18 @@ fun MobileNavigation() {
             composable(MobileScreen.Channels.route) {
                 MobileChannelListScreen(
                     onChannelClick = { channelId, streamUrl, channelName ->
-                        val encodedUrl = URLEncoder.encode(streamUrl, "UTF-8")
-                        val encodedName = URLEncoder.encode(channelName, "UTF-8")
                         navController.navigate(
-                            MobileScreen.Player.createRoute(channelId, encodedUrl, encodedName)
+                            MobileScreen.Player.createRoute(channelId, streamUrl, channelName)
                         )
+                    },
+                    onChannelPlayOnTv = {
+                        navController.navigate(MobileScreen.Remote.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
                 )
             }
@@ -122,10 +126,8 @@ fun MobileNavigation() {
             composable(MobileScreen.Favorites.route) {
                 MobileFavoritesScreen(
                     onChannelClick = { channelId, streamUrl, channelName ->
-                        val encodedUrl = URLEncoder.encode(streamUrl, "UTF-8")
-                        val encodedName = URLEncoder.encode(channelName, "UTF-8")
                         navController.navigate(
-                            MobileScreen.Player.createRoute(channelId, encodedUrl, encodedName)
+                            MobileScreen.Player.createRoute(channelId, streamUrl, channelName)
                         )
                     }
                 )

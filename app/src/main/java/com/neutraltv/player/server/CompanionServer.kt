@@ -17,6 +17,7 @@ import com.neutraltv.player.data.local.dao.PlaylistDao
 import com.neutraltv.player.data.repository.FavoriteRepository
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.gson.gson
+import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
@@ -55,7 +56,7 @@ class CompanionServer @Inject constructor(
     private val gson = Gson()
     private var server: ApplicationEngine? = null
     private val wsConnections = Collections.synchronizedSet(
-        mutableSetOf<io.ktor.websocket.DefaultWebSocketServerSession>()
+        mutableSetOf<io.ktor.server.websocket.WebSocketServerSession>()
     )
 
     val port: Int = ApiRoutes.DEFAULT_PORT
@@ -131,7 +132,11 @@ class CompanionServer @Inject constructor(
                             channelDao.getVodChannels(playlistId).first()
                         }
                     } else {
-                        channelDao.getVisibleChannelsOnce(playlistId)
+                        if (group != null) {
+                            channelDao.getChannelsByGroup(playlistId, group).first()
+                        } else {
+                            channelDao.getVisibleChannelsOnce(playlistId)
+                        }
                     }
 
                     val favoriteIds = favoriteDao.getFavoriteIds(playlistId).first().toSet()
@@ -313,7 +318,7 @@ class CompanionServer @Inject constructor(
 
     private suspend fun broadcastMessage(message: WsMessage) {
         val text = WsMessageSerializer.serialize(message)
-        wsConnections.forEach { session ->
+        wsConnections.forEach { session: io.ktor.server.websocket.WebSocketServerSession ->
             try {
                 session.send(Frame.Text(text))
             } catch (e: Exception) {
