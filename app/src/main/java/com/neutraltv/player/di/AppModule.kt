@@ -5,10 +5,6 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.neutraltv.player.data.parser.M3uParser
-import com.neutraltv.player.data.parser.XmltvParser
-import com.neutraltv.player.data.player.StreamHealthMonitor
-import com.neutraltv.player.data.player.StreamRetryManager
-import com.neutraltv.player.data.preferences.PreferencesRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,29 +26,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun providePreferencesRepository(dataStore: DataStore<Preferences>): PreferencesRepository {
-        return PreferencesRepository(dataStore)
-    }
-
-    @Provides
-    @Singleton
     fun provideM3uParser(): M3uParser {
         return M3uParser()
-    }
-
-    @Provides
-    @Singleton
-    fun provideXmltvParser(): XmltvParser {
-        return XmltvParser()
-    }
-
-    @Provides
-    fun provideStreamRetryManager(): StreamRetryManager {
-        return StreamRetryManager()
-    }
-
-    @Provides
-    fun provideStreamHealthMonitor(): StreamHealthMonitor {
-        return StreamHealthMonitor()
     }
 }

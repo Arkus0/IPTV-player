@@ -13,28 +13,39 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cast
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.neutraltv.core.protocol.ApiRoutes
 
 @Composable
 fun ConnectScreen(
@@ -115,6 +126,69 @@ fun ConnectScreen(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
         }
+
+        // Manual connection
+        var showManual by remember { mutableStateOf(false) }
+        var manualHost by remember { mutableStateOf("") }
+        var manualPort by remember { mutableStateOf(ApiRoutes.DEFAULT_PORT.toString()) }
+
+        TextButton(onClick = { showManual = !showManual }) {
+            Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
+            Spacer(modifier = Modifier.size(4.dp))
+            Text(if (showManual) "Ocultar conexion manual" else "Conexion manual")
+        }
+
+        AnimatedVisibility(visible = showManual) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = manualHost,
+                        onValueChange = { manualHost = it },
+                        modifier = Modifier.weight(2f),
+                        label = { Text("IP") },
+                        placeholder = { Text("192.168.1.100") },
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri)
+                    )
+                    OutlinedTextField(
+                        value = manualPort,
+                        onValueChange = { manualPort = it },
+                        modifier = Modifier.weight(1f),
+                        label = { Text("Puerto") },
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        val port = manualPort.toIntOrNull() ?: ApiRoutes.DEFAULT_PORT
+                        viewModel.connectManual(manualHost.trim(), port)
+                    },
+                    enabled = manualHost.isNotBlank() && !state.isConnecting,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (state.isConnecting) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                        Spacer(modifier = Modifier.size(8.dp))
+                    }
+                    Text("Conectar")
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                HorizontalDivider()
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Device list
         if (state.devices.isEmpty() && !state.isScanning) {

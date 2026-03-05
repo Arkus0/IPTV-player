@@ -87,6 +87,34 @@ class ConnectViewModel @Inject constructor(
         }
     }
 
+    fun connectManual(host: String, port: Int) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isConnecting = true, error = null)
+
+            tvApiClient.setServer(host, port)
+            val result = tvApiClient.getDeviceInfo()
+
+            result.fold(
+                onSuccess = { info ->
+                    tvWebSocketClient.connect(host, port)
+                    _uiState.value = _uiState.value.copy(
+                        isConnecting = false,
+                        isConnected = true,
+                        connectedDeviceName = info.deviceName
+                    )
+                    stopScan()
+                },
+                onFailure = { e ->
+                    tvApiClient.disconnect()
+                    _uiState.value = _uiState.value.copy(
+                        isConnecting = false,
+                        error = "No se pudo conectar: ${e.message}"
+                    )
+                }
+            )
+        }
+    }
+
     fun disconnect() {
         tvWebSocketClient.disconnect()
         tvApiClient.disconnect()

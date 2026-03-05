@@ -7,11 +7,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class PlaybackBridge @Inject constructor() : PlaybackStateProvider, RemoteCommandHandler {
+class PlaybackBridge : PlaybackStateProvider, RemoteCommandHandler {
 
     private val _currentPlaybackState = MutableStateFlow<PlaybackStateDto?>(null)
     override val currentPlaybackState: StateFlow<PlaybackStateDto?> = _currentPlaybackState

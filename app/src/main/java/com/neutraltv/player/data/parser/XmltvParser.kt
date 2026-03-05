@@ -8,6 +8,7 @@ import java.util.Locale
 import java.util.TimeZone
 import java.util.zip.GZIPInputStream
 import javax.inject.Inject
+import javax.inject.Singleton
 
 data class ParsedProgram(
     val channelId: String,
@@ -18,6 +19,7 @@ data class ParsedProgram(
     val category: String?
 )
 
+@Singleton
 class XmltvParser @Inject constructor() {
 
     private val dateFormat = SimpleDateFormat("yyyyMMddHHmmss Z", Locale.US).apply {
