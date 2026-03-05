@@ -13,9 +13,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -28,6 +30,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.tv.material3.Button
+import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
@@ -35,14 +39,7 @@ import com.neutraltv.player.R
 import com.neutraltv.player.data.local.entity.ChannelEntity
 import com.neutraltv.player.data.local.entity.ProgramEntity
 import com.neutraltv.player.ui.components.LoadingIndicator
-import com.neutraltv.player.ui.theme.Background
-import com.neutraltv.player.ui.theme.FocusBorder
 import com.neutraltv.player.ui.theme.JuanPlayerTheme
-import com.neutraltv.player.ui.theme.OnSurface
-import com.neutraltv.player.ui.theme.OnSurfaceVariant
-import com.neutraltv.player.ui.theme.Primary
-import com.neutraltv.player.ui.theme.Surface as SurfaceColor
-import com.neutraltv.player.ui.theme.SurfaceVariant
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -66,12 +63,45 @@ fun EpgScreen(
             .fillMaxSize()
             .padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 0.dp)
     ) {
-        // Title bar
-        Text(
-            text = stringResource(R.string.epg_title),
-            style = JuanPlayerTheme.typography.headlineLarge,
-            color = Primary
-        )
+        // Title bar with refresh button
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.epg_title),
+                style = JuanPlayerTheme.typography.headlineLarge,
+                color = JuanPlayerTheme.colors.primary
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (uiState.isLoadingEpg) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = JuanPlayerTheme.colors.primary,
+                        strokeWidth = 2.dp
+                    )
+                }
+                Button(
+                    onClick = { viewModel.forceRefreshEpg() },
+                    colors = ButtonDefaults.colors(
+                        containerColor = JuanPlayerTheme.colors.surface,
+                        contentColor = JuanPlayerTheme.colors.onSurface,
+                        focusedContainerColor = JuanPlayerTheme.colors.primary,
+                        focusedContentColor = JuanPlayerTheme.colors.background
+                    ),
+                    enabled = !uiState.isLoadingEpg
+                ) {
+                    Text(
+                        text = stringResource(R.string.epg_refresh),
+                        style = JuanPlayerTheme.typography.labelMedium
+                    )
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -87,19 +117,11 @@ fun EpgScreen(
                     Text(
                         text = stringResource(R.string.epg_no_data),
                         style = JuanPlayerTheme.typography.bodyLarge,
-                        color = OnSurfaceVariant
+                        color = JuanPlayerTheme.colors.onSurfaceVariant
                     )
                 }
             }
             else -> {
-                if (uiState.isLoadingEpg) {
-                    Text(
-                        text = stringResource(R.string.epg_loading),
-                        style = JuanPlayerTheme.typography.labelMedium,
-                        color = OnSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                }
                 EpgGrid(
                     channels = uiState.channels,
                     programs = uiState.programs,
@@ -162,14 +184,14 @@ private fun EpgGrid(
                             .width(CHANNEL_COLUMN_WIDTH.dp)
                             .height(56.dp)
                             .padding(vertical = 2.dp)
-                            .background(SurfaceColor, RoundedCornerShape(4.dp))
+                            .background(JuanPlayerTheme.colors.surface, RoundedCornerShape(4.dp))
                             .padding(horizontal = 8.dp),
                         contentAlignment = Alignment.CenterStart
                     ) {
                         Text(
                             text = channel.name,
                             style = JuanPlayerTheme.typography.labelMedium,
-                            color = OnSurface,
+                            color = JuanPlayerTheme.colors.onSurface,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -222,7 +244,7 @@ private fun TimeHeader(
                 Text(
                     text = timeFormat.format(Date(time)),
                     style = JuanPlayerTheme.typography.labelSmall,
-                    color = OnSurfaceVariant,
+                    color = JuanPlayerTheme.colors.onSurfaceVariant,
                     modifier = Modifier.padding(start = 4.dp)
                 )
             }
@@ -254,14 +276,14 @@ private fun ProgramRow(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(SurfaceColor.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                    .background(JuanPlayerTheme.colors.surface.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
                     .padding(horizontal = 8.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
                 Text(
                     text = stringResource(R.string.epg_no_data),
                     style = JuanPlayerTheme.typography.labelSmall,
-                    color = OnSurfaceVariant
+                    color = JuanPlayerTheme.colors.onSurfaceVariant
                 )
             }
         } else {
@@ -282,9 +304,9 @@ private fun ProgramRow(
                             .height(52.dp),
                         shape = ClickableSurfaceDefaults.shape(shape = RoundedCornerShape(4.dp)),
                         colors = ClickableSurfaceDefaults.colors(
-                            containerColor = if (isCurrent) Primary.copy(alpha = 0.3f) else SurfaceColor,
-                            focusedContainerColor = SurfaceVariant,
-                            pressedContainerColor = SurfaceVariant
+                            containerColor = if (isCurrent) JuanPlayerTheme.colors.primary.copy(alpha = 0.3f) else JuanPlayerTheme.colors.surface,
+                            focusedContainerColor = JuanPlayerTheme.colors.surfaceVariant,
+                            pressedContainerColor = JuanPlayerTheme.colors.surfaceVariant
                         )
                     ) {
                         Column(
@@ -295,14 +317,14 @@ private fun ProgramRow(
                             Text(
                                 text = program.title,
                                 style = JuanPlayerTheme.typography.labelSmall,
-                                color = if (isCurrent) FocusBorder else OnSurface,
+                                color = if (isCurrent) JuanPlayerTheme.colors.focusBorder else JuanPlayerTheme.colors.onSurface,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
                                 text = "${timeFormat.format(Date(program.startTime))} - ${timeFormat.format(Date(program.endTime))}",
                                 style = JuanPlayerTheme.typography.labelSmall,
-                                color = OnSurfaceVariant
+                                color = JuanPlayerTheme.colors.onSurfaceVariant
                             )
                         }
                     }
@@ -317,25 +339,25 @@ private fun ProgramInfoBar(program: ProgramEntity) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(SurfaceVariant)
+            .background(JuanPlayerTheme.colors.surfaceVariant)
             .padding(horizontal = 24.dp, vertical = 12.dp)
     ) {
         Text(
             text = program.title,
             style = JuanPlayerTheme.typography.titleMedium,
-            color = OnSurface
+            color = JuanPlayerTheme.colors.onSurface
         )
         Row {
             Text(
                 text = "${timeFormat.format(Date(program.startTime))} - ${timeFormat.format(Date(program.endTime))}",
                 style = JuanPlayerTheme.typography.labelMedium,
-                color = OnSurfaceVariant
+                color = JuanPlayerTheme.colors.onSurfaceVariant
             )
             if (program.category != null) {
                 Text(
                     text = " · ${program.category}",
                     style = JuanPlayerTheme.typography.labelMedium,
-                    color = OnSurfaceVariant
+                    color = JuanPlayerTheme.colors.onSurfaceVariant
                 )
             }
         }
@@ -344,7 +366,7 @@ private fun ProgramInfoBar(program: ProgramEntity) {
             Text(
                 text = program.description,
                 style = JuanPlayerTheme.typography.bodySmall,
-                color = OnSurfaceVariant,
+                color = JuanPlayerTheme.colors.onSurfaceVariant,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )

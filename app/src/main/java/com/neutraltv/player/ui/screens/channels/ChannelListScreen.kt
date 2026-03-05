@@ -25,6 +25,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
@@ -42,15 +43,7 @@ import androidx.tv.material3.Text
 import coil.compose.AsyncImage
 import com.neutraltv.player.R
 import com.neutraltv.player.ui.components.LoadingIndicator
-import com.neutraltv.player.ui.theme.Background
-import com.neutraltv.player.ui.theme.FocusBorder
 import com.neutraltv.player.ui.theme.JuanPlayerTheme
-import com.neutraltv.player.ui.theme.OnSurfaceVariant
-import com.neutraltv.player.ui.theme.Primary
-import com.neutraltv.player.ui.theme.OnSurface
-import com.neutraltv.player.ui.theme.Secondary
-import com.neutraltv.player.ui.theme.Surface as SurfaceColor
-import com.neutraltv.player.ui.theme.SurfaceVariant
 
 @Composable
 fun ChannelListScreen(
@@ -103,22 +96,22 @@ fun ChannelListScreen(
                     label = {
                         Text(
                             text = stringResource(R.string.search_hint),
-                            color = OnSurfaceVariant
+                            color = JuanPlayerTheme.colors.onSurfaceVariant
                         )
                     },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    textStyle = JuanPlayerTheme.typography.bodyLarge.copy(color = OnSurface),
+                    textStyle = JuanPlayerTheme.typography.bodyLarge.copy(color = JuanPlayerTheme.colors.onSurface),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = FocusBorder,
-                        unfocusedBorderColor = OnSurfaceVariant,
-                        cursorColor = Primary,
-                        focusedLabelColor = FocusBorder,
-                        unfocusedLabelColor = OnSurfaceVariant,
-                        focusedContainerColor = Background,
-                        unfocusedContainerColor = Background
+                        focusedBorderColor = JuanPlayerTheme.colors.focusBorder,
+                        unfocusedBorderColor = JuanPlayerTheme.colors.onSurfaceVariant,
+                        cursorColor = JuanPlayerTheme.colors.primary,
+                        focusedLabelColor = JuanPlayerTheme.colors.focusBorder,
+                        unfocusedLabelColor = JuanPlayerTheme.colors.onSurfaceVariant,
+                        focusedContainerColor = JuanPlayerTheme.colors.background,
+                        unfocusedContainerColor = JuanPlayerTheme.colors.background
                     ),
                     shape = RoundedCornerShape(8.dp)
                 )
@@ -137,38 +130,63 @@ fun ChannelListScreen(
                         else
                             uiState.selectedGroup ?: stringResource(R.string.tv_live),
                         style = JuanPlayerTheme.typography.titleLarge,
-                        color = Primary
+                        color = JuanPlayerTheme.colors.primary
                     )
                     if (!uiState.isSearchActive) {
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = stringResource(R.string.channel_count, uiState.channels.size),
                             style = JuanPlayerTheme.typography.labelMedium,
-                            color = OnSurfaceVariant
+                            color = JuanPlayerTheme.colors.onSurfaceVariant
                         )
                     }
                 }
-                // Search toggle button
-                Surface(
-                    onClick = { viewModel.toggleSearch() },
-                    shape = ClickableSurfaceDefaults.shape(shape = RoundedCornerShape(8.dp)),
-                    colors = ClickableSurfaceDefaults.colors(
-                        containerColor = if (uiState.isSearchActive) SurfaceVariant else SurfaceColor,
-                        focusedContainerColor = SurfaceVariant,
-                        pressedContainerColor = SurfaceVariant
-                    ),
-                    border = ClickableSurfaceDefaults.border(
-                        focusedBorder = Border(
-                            border = BorderStroke(2.dp, FocusBorder),
-                            shape = RoundedCornerShape(8.dp)
+                // Search toggle button and hidden toggle button
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Show/hide hidden channels toggle
+                    Surface(
+                        onClick = { viewModel.toggleShowHidden() },
+                        shape = ClickableSurfaceDefaults.shape(shape = RoundedCornerShape(8.dp)),
+                        colors = ClickableSurfaceDefaults.colors(
+                            containerColor = if (uiState.showHiddenChannels) JuanPlayerTheme.colors.surfaceVariant else JuanPlayerTheme.colors.surface,
+                            focusedContainerColor = JuanPlayerTheme.colors.surfaceVariant,
+                            pressedContainerColor = JuanPlayerTheme.colors.surfaceVariant
+                        ),
+                        border = ClickableSurfaceDefaults.border(
+                            focusedBorder = Border(
+                                border = BorderStroke(2.dp, JuanPlayerTheme.colors.focusBorder),
+                                shape = RoundedCornerShape(8.dp)
+                            )
                         )
-                    )
-                ) {
-                    Text(
-                        text = if (uiState.isSearchActive) "\u2716" else "\uD83D\uDD0D",
-                        style = JuanPlayerTheme.typography.titleMedium,
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
-                    )
+                    ) {
+                        Text(
+                            text = if (uiState.showHiddenChannels) "\uD83D\uDC41" else "\uD83D\uDC41\u200D\uD83D\uDDE8",
+                            style = JuanPlayerTheme.typography.titleMedium,
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
+                        )
+                    }
+                    // Search toggle button
+                    Surface(
+                        onClick = { viewModel.toggleSearch() },
+                        shape = ClickableSurfaceDefaults.shape(shape = RoundedCornerShape(8.dp)),
+                        colors = ClickableSurfaceDefaults.colors(
+                            containerColor = if (uiState.isSearchActive) JuanPlayerTheme.colors.surfaceVariant else JuanPlayerTheme.colors.surface,
+                            focusedContainerColor = JuanPlayerTheme.colors.surfaceVariant,
+                            pressedContainerColor = JuanPlayerTheme.colors.surfaceVariant
+                        ),
+                        border = ClickableSurfaceDefaults.border(
+                            focusedBorder = Border(
+                                border = BorderStroke(2.dp, JuanPlayerTheme.colors.focusBorder),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                        )
+                    ) {
+                        Text(
+                            text = if (uiState.isSearchActive) "\u2716" else "\uD83D\uDD0D",
+                            style = JuanPlayerTheme.typography.titleMedium,
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -190,9 +208,12 @@ fun ChannelListScreen(
                             logoUrl = channel.logoUrl,
                             groupTitle = channel.groupTitle,
                             isFavorite = channel.id in uiState.favoriteIds,
+                            isHidden = channel.isHidden,
+                            showHiddenMode = uiState.showHiddenChannels,
                             currentProgram = channel.epgChannelId?.let { uiState.currentPrograms[it] },
                             onClick = { onChannelSelected(channel.id) },
-                            onToggleFavorite = { viewModel.toggleFavorite(channel.id) }
+                            onToggleFavorite = { viewModel.toggleFavorite(channel.id) },
+                            onToggleHidden = { viewModel.toggleChannelHidden(channel.id) }
                         )
                     }
                 }
@@ -247,13 +268,13 @@ private fun GroupItem(
             shape = RoundedCornerShape(8.dp)
         ),
         colors = ClickableSurfaceDefaults.colors(
-            containerColor = if (isSelected) SurfaceVariant else SurfaceColor,
-            focusedContainerColor = SurfaceVariant,
-            pressedContainerColor = SurfaceVariant
+            containerColor = if (isSelected) JuanPlayerTheme.colors.surfaceVariant else JuanPlayerTheme.colors.surface,
+            focusedContainerColor = JuanPlayerTheme.colors.surfaceVariant,
+            pressedContainerColor = JuanPlayerTheme.colors.surfaceVariant
         ),
         border = ClickableSurfaceDefaults.border(
             focusedBorder = Border(
-                border = BorderStroke(2.dp, FocusBorder),
+                border = BorderStroke(2.dp, JuanPlayerTheme.colors.focusBorder),
                 shape = RoundedCornerShape(8.dp)
             )
         )
@@ -261,7 +282,7 @@ private fun GroupItem(
         Text(
             text = name,
             style = JuanPlayerTheme.typography.bodyMedium,
-            color = if (isSelected) Primary else OnSurfaceVariant,
+            color = if (isSelected) JuanPlayerTheme.colors.primary else JuanPlayerTheme.colors.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
@@ -276,24 +297,30 @@ private fun ChannelItem(
     logoUrl: String?,
     groupTitle: String?,
     isFavorite: Boolean = false,
+    isHidden: Boolean = false,
+    showHiddenMode: Boolean = false,
     currentProgram: String? = null,
     onClick: () -> Unit,
-    onToggleFavorite: () -> Unit = {}
+    onToggleFavorite: () -> Unit = {},
+    onToggleHidden: () -> Unit = {}
 ) {
+    val itemAlpha = if (isHidden && showHiddenMode) 0.4f else 1f
     Surface(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .alpha(itemAlpha),
         shape = ClickableSurfaceDefaults.shape(
             shape = RoundedCornerShape(8.dp)
         ),
         colors = ClickableSurfaceDefaults.colors(
-            containerColor = SurfaceColor,
-            focusedContainerColor = SurfaceVariant,
-            pressedContainerColor = SurfaceVariant
+            containerColor = JuanPlayerTheme.colors.surface,
+            focusedContainerColor = JuanPlayerTheme.colors.surfaceVariant,
+            pressedContainerColor = JuanPlayerTheme.colors.surfaceVariant
         ),
         border = ClickableSurfaceDefaults.border(
             focusedBorder = Border(
-                border = BorderStroke(2.dp, FocusBorder),
+                border = BorderStroke(2.dp, JuanPlayerTheme.colors.focusBorder),
                 shape = RoundedCornerShape(8.dp)
             )
         )
@@ -308,7 +335,7 @@ private fun ChannelItem(
             Text(
                 text = number.toString().padStart(3, ' '),
                 style = JuanPlayerTheme.typography.labelMedium,
-                color = OnSurfaceVariant,
+                color = JuanPlayerTheme.colors.onSurfaceVariant,
                 modifier = Modifier.width(48.dp)
             )
 
@@ -337,7 +364,7 @@ private fun ChannelItem(
                     Text(
                         text = "${stringResource(R.string.epg_now)}: $currentProgram",
                         style = JuanPlayerTheme.typography.labelMedium,
-                        color = Secondary,
+                        color = JuanPlayerTheme.colors.secondary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -345,7 +372,7 @@ private fun ChannelItem(
                     Text(
                         text = groupTitle,
                         style = JuanPlayerTheme.typography.labelMedium,
-                        color = OnSurfaceVariant,
+                        color = JuanPlayerTheme.colors.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -358,13 +385,13 @@ private fun ChannelItem(
                 onClick = onToggleFavorite,
                 shape = ClickableSurfaceDefaults.shape(shape = CircleShape),
                 colors = ClickableSurfaceDefaults.colors(
-                    containerColor = SurfaceColor,
-                    focusedContainerColor = SurfaceVariant,
-                    pressedContainerColor = SurfaceVariant
+                    containerColor = JuanPlayerTheme.colors.surface,
+                    focusedContainerColor = JuanPlayerTheme.colors.surfaceVariant,
+                    pressedContainerColor = JuanPlayerTheme.colors.surfaceVariant
                 ),
                 border = ClickableSurfaceDefaults.border(
                     focusedBorder = Border(
-                        border = BorderStroke(2.dp, FocusBorder),
+                        border = BorderStroke(2.dp, JuanPlayerTheme.colors.focusBorder),
                         shape = CircleShape
                     )
                 )
@@ -372,7 +399,32 @@ private fun ChannelItem(
                 Text(
                     text = if (isFavorite) "\u2605" else "\u2606",
                     style = JuanPlayerTheme.typography.titleMedium,
-                    color = if (isFavorite) Primary else OnSurfaceVariant,
+                    color = if (isFavorite) JuanPlayerTheme.colors.primary else JuanPlayerTheme.colors.onSurfaceVariant,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+
+            // Hide/show toggle button
+            Spacer(modifier = Modifier.width(4.dp))
+            Surface(
+                onClick = onToggleHidden,
+                shape = ClickableSurfaceDefaults.shape(shape = CircleShape),
+                colors = ClickableSurfaceDefaults.colors(
+                    containerColor = JuanPlayerTheme.colors.surface,
+                    focusedContainerColor = JuanPlayerTheme.colors.surfaceVariant,
+                    pressedContainerColor = JuanPlayerTheme.colors.surfaceVariant
+                ),
+                border = ClickableSurfaceDefaults.border(
+                    focusedBorder = Border(
+                        border = BorderStroke(2.dp, JuanPlayerTheme.colors.focusBorder),
+                        shape = CircleShape
+                    )
+                )
+            ) {
+                Text(
+                    text = if (isHidden) "\uD83D\uDC41\u200D\uD83D\uDDE8" else "\uD83D\uDEAB",
+                    style = JuanPlayerTheme.typography.labelMedium,
+                    color = if (isHidden) JuanPlayerTheme.colors.onSurfaceVariant else JuanPlayerTheme.colors.onSurfaceVariant,
                     modifier = Modifier.padding(8.dp)
                 )
             }

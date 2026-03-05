@@ -1,6 +1,7 @@
 package com.neutraltv.mobile.ui.screens.channels
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -90,6 +91,24 @@ fun MobileChannelListScreen(
             singleLine = true,
             shape = RoundedCornerShape(12.dp)
         )
+
+        // Cached data indicator
+        if (state.isCached) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.tertiaryContainer)
+                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Mostrando datos en cache (sin conexion a TV)",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+            }
+        }
 
         // Group chips
         if (state.groups.isNotEmpty()) {

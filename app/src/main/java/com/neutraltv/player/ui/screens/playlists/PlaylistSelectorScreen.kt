@@ -36,16 +36,7 @@ import androidx.tv.material3.Text
 import com.neutraltv.player.R
 import com.neutraltv.player.data.local.entity.PlaylistEntity
 import com.neutraltv.player.ui.components.LoadingIndicator
-import com.neutraltv.player.ui.theme.Background
-import com.neutraltv.player.ui.theme.Error
-import com.neutraltv.player.ui.theme.FocusBorder
 import com.neutraltv.player.ui.theme.JuanPlayerTheme
-import com.neutraltv.player.ui.theme.OnSurface
-import com.neutraltv.player.ui.theme.OnSurfaceVariant
-import com.neutraltv.player.ui.theme.Primary
-import com.neutraltv.player.ui.theme.Secondary
-import com.neutraltv.player.ui.theme.Surface as SurfaceColor
-import com.neutraltv.player.ui.theme.SurfaceVariant
 
 @Composable
 fun PlaylistSelectorScreen(
@@ -78,15 +69,15 @@ fun PlaylistSelectorScreen(
             Text(
                 text = stringResource(R.string.playlists_title),
                 style = JuanPlayerTheme.typography.headlineLarge,
-                color = Primary
+                color = JuanPlayerTheme.colors.primary
             )
             Button(
                 onClick = onAddPlaylist,
                 colors = ButtonDefaults.colors(
-                    containerColor = Primary,
-                    contentColor = Background,
-                    focusedContainerColor = FocusBorder,
-                    focusedContentColor = Background
+                    containerColor = JuanPlayerTheme.colors.primary,
+                    contentColor = JuanPlayerTheme.colors.background,
+                    focusedContainerColor = JuanPlayerTheme.colors.focusBorder,
+                    focusedContentColor = JuanPlayerTheme.colors.background
                 )
             ) {
                 Text(
@@ -103,7 +94,7 @@ fun PlaylistSelectorScreen(
             Text(
                 text = stringResource(R.string.playlists_no_playlists),
                 style = JuanPlayerTheme.typography.bodyLarge,
-                color = OnSurfaceVariant
+                color = JuanPlayerTheme.colors.onSurfaceVariant
             )
         } else {
             TvLazyColumn(
@@ -133,16 +124,16 @@ fun PlaylistSelectorScreen(
                 onClick = { },
                 shape = ClickableSurfaceDefaults.shape(shape = RoundedCornerShape(12.dp)),
                 colors = ClickableSurfaceDefaults.colors(
-                    containerColor = SurfaceVariant,
-                    focusedContainerColor = SurfaceVariant,
-                    pressedContainerColor = SurfaceVariant
+                    containerColor = JuanPlayerTheme.colors.surfaceVariant,
+                    focusedContainerColor = JuanPlayerTheme.colors.surfaceVariant,
+                    pressedContainerColor = JuanPlayerTheme.colors.surfaceVariant
                 )
             ) {
                 Column(modifier = Modifier.padding(24.dp)) {
                     Text(
                         text = stringResource(R.string.playlists_delete_confirm, playlist.name),
                         style = JuanPlayerTheme.typography.bodyLarge,
-                        color = OnSurface
+                        color = JuanPlayerTheme.colors.onSurface
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Row(
@@ -152,10 +143,10 @@ fun PlaylistSelectorScreen(
                         Button(
                             onClick = { deleteTarget = null },
                             colors = ButtonDefaults.colors(
-                                containerColor = SurfaceColor,
-                                contentColor = OnSurface,
-                                focusedContainerColor = FocusBorder,
-                                focusedContentColor = Background
+                                containerColor = JuanPlayerTheme.colors.surface,
+                                contentColor = JuanPlayerTheme.colors.onSurface,
+                                focusedContainerColor = JuanPlayerTheme.colors.focusBorder,
+                                focusedContentColor = JuanPlayerTheme.colors.background
                             )
                         ) {
                             Text(stringResource(R.string.settings_cancel), style = JuanPlayerTheme.typography.labelLarge)
@@ -170,10 +161,10 @@ fun PlaylistSelectorScreen(
                                 }
                             },
                             colors = ButtonDefaults.colors(
-                                containerColor = Error,
-                                contentColor = OnSurface,
-                                focusedContainerColor = Error.copy(alpha = 0.8f),
-                                focusedContentColor = OnSurface
+                                containerColor = JuanPlayerTheme.colors.error,
+                                contentColor = JuanPlayerTheme.colors.onSurface,
+                                focusedContainerColor = JuanPlayerTheme.colors.error.copy(alpha = 0.8f),
+                                focusedContentColor = JuanPlayerTheme.colors.onSurface
                             )
                         ) {
                             Text(stringResource(R.string.settings_confirm), style = JuanPlayerTheme.typography.labelLarge)
@@ -196,13 +187,13 @@ private fun PlaylistItem(
         modifier = Modifier.fillMaxWidth(),
         shape = ClickableSurfaceDefaults.shape(shape = RoundedCornerShape(8.dp)),
         colors = ClickableSurfaceDefaults.colors(
-            containerColor = SurfaceColor,
-            focusedContainerColor = SurfaceVariant,
-            pressedContainerColor = SurfaceVariant
+            containerColor = JuanPlayerTheme.colors.surface,
+            focusedContainerColor = JuanPlayerTheme.colors.surfaceVariant,
+            pressedContainerColor = JuanPlayerTheme.colors.surfaceVariant
         ),
         border = ClickableSurfaceDefaults.border(
             focusedBorder = Border(
-                border = BorderStroke(2.dp, FocusBorder),
+                border = BorderStroke(2.dp, JuanPlayerTheme.colors.focusBorder),
                 shape = RoundedCornerShape(8.dp)
             )
         )
@@ -219,7 +210,7 @@ private fun PlaylistItem(
                     Text(
                         text = playlist.name,
                         style = JuanPlayerTheme.typography.bodyLarge,
-                        color = OnSurface,
+                        color = JuanPlayerTheme.colors.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -228,7 +219,7 @@ private fun PlaylistItem(
                         Text(
                             text = "\u2713", // checkmark
                             style = JuanPlayerTheme.typography.bodyLarge,
-                            color = Secondary
+                            color = JuanPlayerTheme.colors.secondary
                         )
                     }
                 }
@@ -236,7 +227,7 @@ private fun PlaylistItem(
                 Text(
                     text = stringResource(R.string.channel_count, playlist.channelCount),
                     style = JuanPlayerTheme.typography.labelMedium,
-                    color = OnSurfaceVariant
+                    color = JuanPlayerTheme.colors.onSurfaceVariant
                 )
             }
         }

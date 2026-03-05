@@ -15,6 +15,7 @@ import com.neutraltv.player.ui.screens.channels.ChannelListScreen
 import com.neutraltv.player.ui.screens.epg.EpgScreen
 import com.neutraltv.player.ui.screens.vod.VodScreen
 import com.neutraltv.player.ui.screens.favorites.FavoritesScreen
+import com.neutraltv.player.ui.screens.history.HistoryScreen
 import com.neutraltv.player.ui.screens.home.HomeScreen
 import com.neutraltv.player.ui.screens.onboarding.OnboardingScreen
 import com.neutraltv.player.ui.screens.player.PlayerScreen
@@ -125,6 +126,9 @@ fun AppNavigation() {
                 onNavigateToFavorites = {
                     navController.navigate(Screen.Favorites.route)
                 },
+                onNavigateToHistory = {
+                    navController.navigate(Screen.History.route)
+                },
                 onNavigateToEpg = {
                     navController.navigate(Screen.Epg.route)
                 },
@@ -199,6 +203,15 @@ fun AppNavigation() {
 
         composable(Screen.Favorites.route) {
             FavoritesScreen(
+                onChannelSelected = { channelId ->
+                    navController.navigate(Screen.Player.createRoute(channelId))
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.History.route) {
+            HistoryScreen(
                 onChannelSelected = { channelId ->
                     navController.navigate(Screen.Player.createRoute(channelId))
                 },

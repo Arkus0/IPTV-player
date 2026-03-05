@@ -16,8 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
-import com.neutraltv.player.ui.theme.Surface
-import com.neutraltv.player.ui.theme.SurfaceVariant
+import com.neutraltv.player.ui.theme.JuanPlayerTheme
 
 @Composable
 fun ShimmerBox(
@@ -38,9 +37,9 @@ fun ShimmerBox(
     )
 
     val shimmerColors = listOf(
-        SurfaceVariant.copy(alpha = 0.6f),
-        Surface.copy(alpha = 0.2f),
-        SurfaceVariant.copy(alpha = 0.6f)
+        JuanPlayerTheme.colors.surfaceVariant.copy(alpha = 0.6f),
+        JuanPlayerTheme.colors.surface.copy(alpha = 0.2f),
+        JuanPlayerTheme.colors.surfaceVariant.copy(alpha = 0.6f)
     )
 
     val brush = Brush.linearGradient(

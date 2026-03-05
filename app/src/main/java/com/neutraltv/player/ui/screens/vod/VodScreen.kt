@@ -38,11 +38,6 @@ import com.neutraltv.player.data.local.entity.ChannelEntity
 import com.neutraltv.player.ui.components.FocusableCard
 import com.neutraltv.player.ui.components.LoadingIndicator
 import com.neutraltv.player.ui.theme.JuanPlayerTheme
-import com.neutraltv.player.ui.theme.OnSurface
-import com.neutraltv.player.ui.theme.OnSurfaceVariant
-import com.neutraltv.player.ui.theme.Primary
-import com.neutraltv.player.ui.theme.Surface
-import com.neutraltv.player.ui.theme.SurfaceVariant
 
 @Composable
 fun VodScreen(
@@ -68,7 +63,7 @@ fun VodScreen(
             Text(
                 text = stringResource(R.string.vod_title),
                 style = JuanPlayerTheme.typography.headlineLarge,
-                color = Primary
+                color = JuanPlayerTheme.colors.primary
             )
 
             FocusableCard(
@@ -78,7 +73,7 @@ fun VodScreen(
                 Text(
                     text = if (uiState.isSearchActive) "\u2716" else "\uD83D\uDD0D",
                     style = JuanPlayerTheme.typography.titleMedium,
-                    color = OnSurface
+                    color = JuanPlayerTheme.colors.onSurface
                 )
             }
         }
@@ -92,15 +87,15 @@ fun VodScreen(
                 onValueChange = { viewModel.onSearchQueryChanged(it) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(SurfaceVariant, RoundedCornerShape(8.dp))
+                    .background(JuanPlayerTheme.colors.surfaceVariant, RoundedCornerShape(8.dp))
                     .padding(horizontal = 16.dp, vertical = 12.dp),
-                textStyle = JuanPlayerTheme.typography.bodyMedium.copy(color = OnSurface),
+                textStyle = JuanPlayerTheme.typography.bodyMedium.copy(color = JuanPlayerTheme.colors.onSurface),
                 decorationBox = { innerTextField ->
                     if (uiState.searchQuery.isEmpty()) {
                         Text(
                             text = stringResource(R.string.vod_search_hint),
                             style = JuanPlayerTheme.typography.bodyMedium,
-                            color = OnSurfaceVariant
+                            color = JuanPlayerTheme.colors.onSurfaceVariant
                         )
                     }
                     innerTextField()
@@ -144,7 +139,7 @@ fun VodScreen(
                 Text(
                     text = stringResource(R.string.vod_empty),
                     style = JuanPlayerTheme.typography.bodyLarge,
-                    color = OnSurfaceVariant
+                    color = JuanPlayerTheme.colors.onSurfaceVariant
                 )
             }
         } else {
@@ -193,7 +188,7 @@ private fun CategoryChip(
         Text(
             text = label,
             style = JuanPlayerTheme.typography.labelLarge,
-            color = if (isSelected) Primary else OnSurface,
+            color = if (isSelected) JuanPlayerTheme.colors.primary else JuanPlayerTheme.colors.onSurface,
             modifier = Modifier.padding(horizontal = 8.dp)
         )
     }
@@ -204,7 +199,7 @@ private fun VodItem(
     channel: ChannelEntity,
     onClick: () -> Unit
 ) {
-    val desc = channel.name + (channel.groupTitle?.let { ", categoría: $it" } ?: "")
+    val desc = channel.name + (channel.groupTitle?.let { ", categor\u00eda: $it" } ?: "")
     FocusableCard(
         onClick = onClick,
         modifier = Modifier.semantics { contentDescription = desc }
@@ -216,7 +211,7 @@ private fun VodItem(
                     .fillMaxWidth()
                     .aspectRatio(16f / 9f)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(SurfaceVariant)
+                    .background(JuanPlayerTheme.colors.surfaceVariant)
             ) {
                 if (channel.logoUrl != null) {
                     AsyncImage(
@@ -233,13 +228,13 @@ private fun VodItem(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(6.dp)
-                            .background(Primary.copy(alpha = 0.9f), RoundedCornerShape(4.dp))
+                            .background(JuanPlayerTheme.colors.primary.copy(alpha = 0.9f), RoundedCornerShape(4.dp))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
                             text = stringResource(R.string.vod_resume),
                             style = JuanPlayerTheme.typography.labelSmall,
-                            color = OnSurface
+                            color = JuanPlayerTheme.colors.onSurface
                         )
                     }
                 }
@@ -251,7 +246,7 @@ private fun VodItem(
             Text(
                 text = channel.name,
                 style = JuanPlayerTheme.typography.bodyMedium,
-                color = OnSurface,
+                color = JuanPlayerTheme.colors.onSurface,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -261,7 +256,7 @@ private fun VodItem(
                 Text(
                     text = channel.groupTitle,
                     style = JuanPlayerTheme.typography.labelSmall,
-                    color = OnSurfaceVariant,
+                    color = JuanPlayerTheme.colors.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )

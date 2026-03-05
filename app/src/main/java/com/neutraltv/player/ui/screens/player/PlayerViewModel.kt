@@ -3,6 +3,7 @@ package com.neutraltv.player.ui.screens.player
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.neutraltv.player.data.local.entity.ChannelEntity
+import com.neutraltv.player.data.player.StreamHealthMonitor
 import com.neutraltv.player.data.player.StreamRetryManager
 import com.neutraltv.player.data.preferences.PreferencesRepository
 import com.neutraltv.player.data.repository.EpgRepository
@@ -67,7 +68,8 @@ class PlayerViewModel @Inject constructor(
     private val retryManager: StreamRetryManager,
     private val preferencesRepository: PreferencesRepository,
     private val xtreamRepository: XtreamRepository,
-    private val playbackBridge: PlaybackBridge
+    private val playbackBridge: PlaybackBridge,
+    private val streamHealthMonitor: StreamHealthMonitor
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PlayerUiState())
@@ -83,6 +85,10 @@ class PlayerViewModel @Inject constructor(
 
     private val _volumeEvent = MutableSharedFlow<Int>(extraBufferCapacity = 5)
     val volumeEvent: SharedFlow<Int> = _volumeEvent
+
+    // Playback position reported by the UI for health monitoring
+    @Volatile
+    private var lastReportedPosition: Long = 0L
 
     init {
         // Observe remote commands from companion mobile app
@@ -197,6 +203,7 @@ class PlayerViewModel @Inject constructor(
                 observeCurrentProgram(channel)
                 fetchEpgIfNeeded(channel.playlistId)
             }
+            startHealthMonitor()
         }
     }
 
@@ -480,6 +487,28 @@ class PlayerViewModel @Inject constructor(
                 episodeId = episodeId,
                 vodProgress = episode.progress
             )
+            startHealthMonitor()
         }
+    }
+
+    fun reportPlaybackPosition(positionMs: Long) {
+        lastReportedPosition = positionMs
+    }
+
+    private fun startHealthMonitor() {
+        streamHealthMonitor.start(
+            scope = viewModelScope,
+            getPosition = { lastReportedPosition },
+            onStall = {
+                if (!_uiState.value.isRetrying && _uiState.value.error == null) {
+                    onPlayerError(-1) // triggers retry flow for stall
+                }
+            }
+        )
+    }
+
+    override fun onCleared() {
+        streamHealthMonitor.stop()
+        super.onCleared()
     }
 }

@@ -9,6 +9,7 @@ sealed class Screen(val route: String) {
     data object Settings : Screen("settings")
     data object Playlists : Screen("playlists")
     data object Favorites : Screen("favorites")
+    data object History : Screen("history")
     data object Epg : Screen("epg")
     data object Vod : Screen("vod")
     data object Series : Screen("series")

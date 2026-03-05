@@ -1,8 +1,10 @@
 package com.neutraltv.player.data.repository
 
 import com.neutraltv.player.data.local.dao.ChannelDao
+import com.neutraltv.player.data.local.dao.FavoriteDao
 import com.neutraltv.player.data.local.dao.PlaylistDao
 import com.neutraltv.player.data.local.entity.ChannelEntity
+import com.neutraltv.player.data.local.entity.FavoriteEntity
 import com.neutraltv.player.data.local.entity.PlaylistEntity
 import com.neutraltv.player.data.parser.M3uParser
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +19,7 @@ import javax.inject.Singleton
 class PlaylistRepository @Inject constructor(
     private val playlistDao: PlaylistDao,
     private val channelDao: ChannelDao,
+    private val favoriteDao: FavoriteDao,
     private val m3uParser: M3uParser,
     private val okHttpClient: OkHttpClient
 ) {
@@ -45,8 +48,33 @@ class PlaylistRepository @Inject constructor(
     fun searchChannels(playlistId: Long, query: String): Flow<List<ChannelEntity>> =
         channelDao.searchChannels(playlistId, query)
 
+    // All channels including hidden
+    fun getAllChannelsFlow(playlistId: Long): Flow<List<ChannelEntity>> =
+        channelDao.getAllChannelsFlow(playlistId)
+
+    fun getAllChannelsByGroup(playlistId: Long, group: String?): Flow<List<ChannelEntity>> =
+        channelDao.getAllChannelsByGroup(playlistId, group)
+
+    fun searchAllChannels(playlistId: Long, query: String): Flow<List<ChannelEntity>> =
+        channelDao.searchAllChannels(playlistId, query)
+
+    suspend fun toggleChannelHidden(channelId: Long) {
+        withContext(Dispatchers.IO) {
+            channelDao.toggleHidden(channelId)
+        }
+    }
+
     fun getRecentlyWatched(playlistId: Long, limit: Int = 5): Flow<List<ChannelEntity>> =
         channelDao.getRecentlyWatched(playlistId, limit)
+
+    fun getWatchHistory(playlistId: Long): Flow<List<ChannelEntity>> =
+        channelDao.getWatchHistory(playlistId)
+
+    suspend fun clearWatchHistory(playlistId: Long) {
+        withContext(Dispatchers.IO) {
+            channelDao.clearWatchHistory(playlistId)
+        }
+    }
 
     suspend fun markChannelWatched(channelId: Long) {
         withContext(Dispatchers.IO) {
@@ -136,6 +164,101 @@ class PlaylistRepository @Inject constructor(
         channelDao.insertAll(channelEntities)
 
         return Result.success(playlist.copy(id = playlistId))
+    }
+
+    suspend fun refreshActivePlaylist(): Result<Int> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val playlist = playlistDao.getActivePlaylistOnce()
+                    ?: return@withContext Result.failure(Exception("No active playlist"))
+
+                if (playlist.type != "m3u" || playlist.url.isNullOrBlank()) {
+                    return@withContext Result.failure(
+                        Exception("Playlist has no URL to refresh from")
+                    )
+                }
+
+                // Download the M3U file
+                val request = Request.Builder().url(playlist.url).build()
+                val response = okHttpClient.newCall(request).execute()
+
+                if (!response.isSuccessful) {
+                    return@withContext Result.failure(
+                        Exception("HTTP ${response.code}: ${response.message}")
+                    )
+                }
+
+                val body = response.body?.string()
+                    ?: return@withContext Result.failure(Exception("Empty response"))
+
+                // Parse the M3U content
+                val parseResult = m3uParser.parse(body)
+                if (parseResult.channels.isEmpty()) {
+                    return@withContext Result.failure(Exception("No channels found"))
+                }
+
+                // Preserve user data from existing channels
+                val oldChannels = channelDao.getAllByPlaylistId(playlist.id)
+                val oldFavorites = favoriteDao.getFavoritesByPlaylist(playlist.id)
+
+                // Build streamUrl-keyed maps for watched timestamps and VOD progress
+                val watchedMap = mutableMapOf<String, Long>()
+                val progressMap = mutableMapOf<String, Long>()
+                for (ch in oldChannels) {
+                    ch.lastWatchedAt?.let { watchedMap[ch.streamUrl] = it }
+                    if (ch.vodProgress > 0) progressMap[ch.streamUrl] = ch.vodProgress
+                }
+
+                // Build favorite streamUrl map (streamUrl -> addedAt)
+                val favChannelIdToAddedAt = oldFavorites.associate { it.channelId to it.addedAt }
+                val favStreamUrls = mutableMapOf<String, Long>()
+                for (ch in oldChannels) {
+                    favChannelIdToAddedAt[ch.id]?.let { addedAt ->
+                        favStreamUrls[ch.streamUrl] = addedAt
+                    }
+                }
+
+                // Delete old channels (cascade deletes associated favorites)
+                channelDao.deleteByPlaylistId(playlist.id)
+
+                // Insert new channels with preserved user data
+                val newChannels = parseResult.channels.map { parsed ->
+                    ChannelEntity(
+                        playlistId = playlist.id,
+                        name = parsed.name,
+                        streamUrl = parsed.streamUrl,
+                        logoUrl = parsed.logoUrl,
+                        groupTitle = parsed.groupTitle,
+                        position = parsed.position,
+                        epgChannelId = parsed.tvgId,
+                        channelType = parsed.channelType,
+                        lastWatchedAt = watchedMap[parsed.streamUrl],
+                        vodProgress = progressMap[parsed.streamUrl] ?: 0
+                    )
+                }
+                channelDao.insertAll(newChannels)
+
+                // Restore favorites for channels that still exist
+                if (favStreamUrls.isNotEmpty()) {
+                    val insertedChannels = channelDao.getAllByPlaylistId(playlist.id)
+                    for (ch in insertedChannels) {
+                        favStreamUrls[ch.streamUrl]?.let { addedAt ->
+                            favoriteDao.insert(
+                                FavoriteEntity(channelId = ch.id, addedAt = addedAt)
+                            )
+                        }
+                    }
+                }
+
+                // Update playlist channel count
+                val newCount = newChannels.size
+                playlistDao.updateChannelCount(playlist.id, newCount)
+
+                Result.success(newCount)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
     }
 
     suspend fun deleteActivePlaylist() {

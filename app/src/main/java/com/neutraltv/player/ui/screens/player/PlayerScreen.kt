@@ -60,15 +60,7 @@ import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
 import coil.compose.AsyncImage
 import com.neutraltv.player.R
-import com.neutraltv.player.ui.theme.Background
-import com.neutraltv.player.ui.theme.Error
-import com.neutraltv.player.ui.theme.FocusBorder
 import com.neutraltv.player.ui.theme.JuanPlayerTheme
-import com.neutraltv.player.ui.theme.OnSurface
-import com.neutraltv.player.ui.theme.OnSurfaceVariant
-import com.neutraltv.player.ui.theme.Primary
-import com.neutraltv.player.ui.theme.Secondary
-import com.neutraltv.player.ui.theme.Surface
 import kotlinx.coroutines.delay
 
 @OptIn(UnstableApi::class)
@@ -156,6 +148,7 @@ fun PlayerScreen(
     LaunchedEffect(uiState.currentChannel) {
         while (true) {
             delay(1000L)
+            viewModel.reportPlaybackPosition(exoPlayer.currentPosition)
             if (uiState.isVod) {
                 if (exoPlayer.duration > 0) {
                     viewModel.updateVodProgress(exoPlayer.currentPosition, exoPlayer.duration)
@@ -244,7 +237,7 @@ fun PlayerScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Background)
+            .background(JuanPlayerTheme.colors.background)
             .focusRequester(focusRequester)
             .focusable()
             .onKeyEvent { event ->
@@ -402,7 +395,7 @@ private fun ErrorOverlay(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Background.copy(alpha = 0.85f)),
+            .background(JuanPlayerTheme.colors.background.copy(alpha = 0.85f)),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -412,23 +405,23 @@ private fun ErrorOverlay(
                 Text(
                     text = stringResource(R.string.error_retrying, retryAttempt, maxRetries),
                     style = JuanPlayerTheme.typography.titleMedium,
-                    color = OnSurface
+                    color = JuanPlayerTheme.colors.onSurface
                 )
             } else {
                 Text(
                     text = errorMessage ?: stringResource(R.string.error_unknown),
                     style = JuanPlayerTheme.typography.titleMedium,
-                    color = Error
+                    color = JuanPlayerTheme.colors.error
                 )
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     Button(
                         onClick = onRetry,
                         colors = ButtonDefaults.colors(
-                            containerColor = Primary,
-                            contentColor = Background,
-                            focusedContainerColor = FocusBorder,
-                            focusedContentColor = Background
+                            containerColor = JuanPlayerTheme.colors.primary,
+                            contentColor = JuanPlayerTheme.colors.background,
+                            focusedContainerColor = JuanPlayerTheme.colors.focusBorder,
+                            focusedContentColor = JuanPlayerTheme.colors.background
                         )
                     ) {
                         Text(
@@ -440,10 +433,10 @@ private fun ErrorOverlay(
                     Button(
                         onClick = onSkip,
                         colors = ButtonDefaults.colors(
-                            containerColor = Surface,
-                            contentColor = OnSurface,
-                            focusedContainerColor = FocusBorder,
-                            focusedContentColor = Background
+                            containerColor = JuanPlayerTheme.colors.surface,
+                            contentColor = JuanPlayerTheme.colors.onSurface,
+                            focusedContainerColor = JuanPlayerTheme.colors.focusBorder,
+                            focusedContentColor = JuanPlayerTheme.colors.background
                         )
                     ) {
                         Text(
@@ -472,7 +465,7 @@ private fun ChannelInfoOverlay(
         modifier = Modifier
             .padding(32.dp)
             .background(
-                color = Surface.copy(alpha = 0.85f),
+                color = JuanPlayerTheme.colors.surface.copy(alpha = 0.85f),
                 shape = RoundedCornerShape(12.dp)
             )
             .padding(horizontal = 20.dp, vertical = 14.dp),
@@ -482,10 +475,10 @@ private fun ChannelInfoOverlay(
         Text(
             text = if (isVod) "VOD" else stringResource(R.string.timeshift_live),
             style = JuanPlayerTheme.typography.labelSmall,
-            color = if (isVod) Primary else Color(0xFF4CAF50),
+            color = if (isVod) JuanPlayerTheme.colors.primary else Color(0xFF4CAF50),
             modifier = Modifier
                 .background(
-                    color = if (isVod) Primary.copy(alpha = 0.15f) else Color(0xFF4CAF50).copy(alpha = 0.15f),
+                    color = if (isVod) JuanPlayerTheme.colors.primary.copy(alpha = 0.15f) else Color(0xFF4CAF50).copy(alpha = 0.15f),
                     shape = RoundedCornerShape(4.dp)
                 )
                 .padding(horizontal = 6.dp, vertical = 2.dp)
@@ -497,7 +490,7 @@ private fun ChannelInfoOverlay(
         Text(
             text = channelNumber.toString(),
             style = JuanPlayerTheme.typography.headlineMedium,
-            color = Primary
+            color = JuanPlayerTheme.colors.primary
         )
 
         Spacer(modifier = Modifier.width(16.dp))
@@ -525,14 +518,14 @@ private fun ChannelInfoOverlay(
                 Text(
                     text = channelName,
                     style = JuanPlayerTheme.typography.titleMedium,
-                    color = OnSurface
+                    color = JuanPlayerTheme.colors.onSurface
                 )
                 if (isFavorite) {
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "\u2605",
                         style = JuanPlayerTheme.typography.titleMedium,
-                        color = Primary
+                        color = JuanPlayerTheme.colors.primary
                     )
                 }
             }
@@ -540,7 +533,7 @@ private fun ChannelInfoOverlay(
                 Text(
                     text = groupTitle,
                     style = JuanPlayerTheme.typography.labelMedium,
-                    color = OnSurfaceVariant
+                    color = JuanPlayerTheme.colors.onSurfaceVariant
                 )
             }
             if (currentProgramTitle != null) {
@@ -548,7 +541,7 @@ private fun ChannelInfoOverlay(
                 Text(
                     text = "${stringResource(R.string.epg_now)}: $currentProgramTitle",
                     style = JuanPlayerTheme.typography.labelMedium,
-                    color = FocusBorder
+                    color = JuanPlayerTheme.colors.focusBorder
                 )
             }
         }
@@ -565,7 +558,7 @@ private fun PlayerControlsOverlay(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = Surface.copy(alpha = 0.85f),
+                color = JuanPlayerTheme.colors.surface.copy(alpha = 0.85f),
                 shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
             )
             .padding(horizontal = 32.dp, vertical = 16.dp),
@@ -575,33 +568,33 @@ private fun PlayerControlsOverlay(
         Text(
             text = channelName,
             style = JuanPlayerTheme.typography.titleMedium,
-            color = OnSurface
+            color = JuanPlayerTheme.colors.onSurface
         )
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = if (isPlaying) "\u23F8" else "\u25B6", // Pause / Play
                 style = JuanPlayerTheme.typography.headlineMedium,
-                color = FocusBorder
+                color = JuanPlayerTheme.colors.focusBorder
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = "\u2191 Canal anterior",
                     style = JuanPlayerTheme.typography.labelMedium,
-                    color = OnSurfaceVariant
+                    color = JuanPlayerTheme.colors.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = "\u2193 Canal siguiente",
                     style = JuanPlayerTheme.typography.labelMedium,
-                    color = OnSurfaceVariant
+                    color = JuanPlayerTheme.colors.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = "\u2190\u2192 Retroceder/Avanzar 10s",
                     style = JuanPlayerTheme.typography.labelMedium,
-                    color = OnSurfaceVariant
+                    color = JuanPlayerTheme.colors.onSurfaceVariant
                 )
             }
         }
@@ -617,7 +610,7 @@ private fun TimeshiftOverlay(
         modifier = Modifier
             .padding(32.dp)
             .background(
-                color = Surface.copy(alpha = 0.85f),
+                color = JuanPlayerTheme.colors.surface.copy(alpha = 0.85f),
                 shape = RoundedCornerShape(12.dp)
             )
             .padding(horizontal = 16.dp, vertical = 10.dp),
@@ -629,7 +622,7 @@ private fun TimeshiftOverlay(
             Text(
                 text = stringResource(R.string.timeshift_behind, minutes, seconds),
                 style = JuanPlayerTheme.typography.titleMedium,
-                color = Primary
+                color = JuanPlayerTheme.colors.primary
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -659,7 +652,7 @@ private fun VodControlsOverlay(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = Surface.copy(alpha = 0.85f),
+                color = JuanPlayerTheme.colors.surface.copy(alpha = 0.85f),
                 shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
             )
             .padding(horizontal = 32.dp, vertical = 16.dp)
@@ -668,7 +661,7 @@ private fun VodControlsOverlay(
         Text(
             text = channelName,
             style = JuanPlayerTheme.typography.titleMedium,
-            color = OnSurface
+            color = JuanPlayerTheme.colors.onSurface
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -679,13 +672,13 @@ private fun VodControlsOverlay(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(4.dp)
-                .background(OnSurfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(2.dp))
+                .background(JuanPlayerTheme.colors.onSurfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(2.dp))
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth(progress)
                     .height(4.dp)
-                    .background(Primary, RoundedCornerShape(2.dp))
+                    .background(JuanPlayerTheme.colors.primary, RoundedCornerShape(2.dp))
             )
         }
 
@@ -700,17 +693,17 @@ private fun VodControlsOverlay(
             Text(
                 text = formatTime(currentPosition),
                 style = JuanPlayerTheme.typography.labelMedium,
-                color = OnSurfaceVariant
+                color = JuanPlayerTheme.colors.onSurfaceVariant
             )
             Text(
                 text = if (isPlaying) "\u23F8" else "\u25B6",
                 style = JuanPlayerTheme.typography.headlineMedium,
-                color = FocusBorder
+                color = JuanPlayerTheme.colors.focusBorder
             )
             Text(
                 text = formatTime(duration),
                 style = JuanPlayerTheme.typography.labelMedium,
-                color = OnSurfaceVariant
+                color = JuanPlayerTheme.colors.onSurfaceVariant
             )
         }
 
@@ -718,7 +711,7 @@ private fun VodControlsOverlay(
         Text(
             text = "\u2190\u2192 Retroceder/Avanzar 10s",
             style = JuanPlayerTheme.typography.labelMedium,
-            color = OnSurfaceVariant,
+            color = JuanPlayerTheme.colors.onSurfaceVariant,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
     }

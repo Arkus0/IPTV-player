@@ -45,6 +45,12 @@
     <string name="settings_manage_playlists">Administrar Listas</string>
     <string name="settings_manage_playlists_desc">Agregar, cambiar o eliminar listas de reproducción</string>
 
+    <!-- Refresh playlist -->
+    <string name="settings_refresh_playlist">Actualizar Lista</string>
+    <string name="settings_refreshing">Actualizando…</string>
+    <string name="settings_refresh_success">Lista actualizada: %d canales</string>
+    <string name="settings_refresh_error">Error al actualizar la lista</string>
+
     <!-- Favorites -->
     <string name="favorites_title">Favoritos</string>
     <string name="favorites_empty">No tienes canales favoritos</string>
@@ -55,14 +61,35 @@
     <string name="recent_title">Recientes</string>
     <string name="recent_empty">Aún no has visto ningún canal</string>
 
+    <!-- History -->
+    <string name="history_title">Historial</string>
+    <string name="history_empty">No hay historial de reproducción</string>
+    <string name="history_clear">Borrar Historial</string>
+    <string name="history_clear_confirm">¿Borrar todo el historial?</string>
+    <string name="history_just_now">Ahora</string>
+    <string name="history_minutes_ago">Hace %d min</string>
+    <string name="history_hours_ago">Hace %d h</string>
+    <string name="history_yesterday">Ayer</string>
+    <string name="history_days_ago">Hace %d días</string>
+
     <!-- Home -->
     <string name="home_epg">Guía EPG</string>
     <string name="home_favorites">Favoritos</string>
     <string name="home_change_playlist">Cambiar</string>
+    <string name="home_now_on_your_channels">Ahora en tus canales</string>
+    <string name="home_recommended_for_you">Recomendado para ti</string>
+    <string name="home_starting_soon">Empieza pronto</string>
+    <string name="home_now">AHORA</string>
 
     <!-- Search -->
     <string name="search_hint">Buscar canales…</string>
     <string name="search_no_results">Sin resultados para \"%s\"</string>
+
+    <!-- Channel visibility -->
+    <string name="channels_show_hidden">Mostrar ocultos</string>
+    <string name="channels_hide_hidden">Ocultar ocultos</string>
+    <string name="channel_hidden">Canal oculto</string>
+    <string name="channel_toggle_hidden">Ocultar/mostrar canal</string>
 
     <!-- Player errors -->
     <string name="error_network">Error de conexión</string>
@@ -77,6 +104,8 @@
     <string name="epg_now">Ahora</string>
     <string name="epg_no_data">Sin datos de programación</string>
     <string name="epg_loading">Cargando guía…</string>
+    <string name="epg_refresh">Actualizar EPG</string>
+    <string name="epg_last_updated">Actualizado: %s</string>
 
     <!-- VOD -->
     <string name="vod_title">VOD</string>
@@ -113,6 +142,21 @@
     <string name="settings_epg_url_hint">URL del archivo XMLTV (opcional)</string>
     <string name="settings_epg_url_desc">Si tu lista M3U no incluye guía EPG, puedes agregar una URL XMLTV aquí</string>
     <string name="settings_epg_url_save">Guardar</string>
+
+    <!-- Companion Mode -->
+    <string name="settings_companion_mode">Modo Companion</string>
+    <string name="settings_companion_mode_desc">Permite controlar esta TV desde la app móvil</string>
+    <string name="settings_companion_enabled">Activado</string>
+    <string name="settings_companion_disabled">Desactivado</string>
+
+    <!-- Backup -->
+    <string name="settings_export">Exportar Configuración</string>
+    <string name="settings_export_desc">Guardar playlists, favoritos y ajustes</string>
+    <string name="settings_import">Importar Configuración</string>
+    <string name="settings_import_desc">Restaurar desde un archivo de respaldo</string>
+    <string name="settings_export_success">Configuración exportada correctamente</string>
+    <string name="settings_import_success">Configuración importada correctamente</string>
+    <string name="settings_import_error">Error al importar configuración</string>
 
     <!-- Xtream Codes -->
     <string name="xtream_server_url">URL del Servidor</string>

@@ -43,7 +43,7 @@ class ConnectViewModel @Inject constructor(
                 _uiState.value.copy(
                     devices = devices,
                     isScanning = isDiscovering,
-                    isConnected = wsState == ConnectionState.CONNECTED
+                    isConnected = wsState == ConnectionState.CONNECTED || wsState == ConnectionState.RECONNECTING
                 )
             }.collect { state ->
                 _uiState.value = state

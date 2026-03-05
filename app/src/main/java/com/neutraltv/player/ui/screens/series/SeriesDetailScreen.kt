@@ -38,11 +38,6 @@ import com.neutraltv.player.data.local.entity.EpisodeEntity
 import com.neutraltv.player.ui.components.FocusableCard
 import com.neutraltv.player.ui.components.LoadingIndicator
 import com.neutraltv.player.ui.theme.JuanPlayerTheme
-import com.neutraltv.player.ui.theme.OnSurface
-import com.neutraltv.player.ui.theme.OnSurfaceVariant
-import com.neutraltv.player.ui.theme.Primary
-import com.neutraltv.player.ui.theme.Surface
-import com.neutraltv.player.ui.theme.SurfaceVariant
 
 @Composable
 fun SeriesDetailScreen(
@@ -77,7 +72,7 @@ fun SeriesDetailScreen(
                     modifier = Modifier
                         .size(width = 160.dp, height = 240.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(SurfaceVariant)
+                        .background(JuanPlayerTheme.colors.surfaceVariant)
                 ) {
                     AsyncImage(
                         model = series.cover,
@@ -94,7 +89,7 @@ fun SeriesDetailScreen(
                 Text(
                     text = series.name,
                     style = JuanPlayerTheme.typography.headlineMedium,
-                    color = Primary,
+                    color = JuanPlayerTheme.colors.primary,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -104,7 +99,7 @@ fun SeriesDetailScreen(
                     Text(
                         text = "Rating: ${series.rating}",
                         style = JuanPlayerTheme.typography.labelMedium,
-                        color = OnSurfaceVariant
+                        color = JuanPlayerTheme.colors.onSurfaceVariant
                     )
                 }
 
@@ -113,7 +108,7 @@ fun SeriesDetailScreen(
                     Text(
                         text = series.categoryName,
                         style = JuanPlayerTheme.typography.labelMedium,
-                        color = OnSurfaceVariant
+                        color = JuanPlayerTheme.colors.onSurfaceVariant
                     )
                 }
 
@@ -122,7 +117,7 @@ fun SeriesDetailScreen(
                     Text(
                         text = series.plot,
                         style = JuanPlayerTheme.typography.bodySmall,
-                        color = OnSurfaceVariant,
+                        color = JuanPlayerTheme.colors.onSurfaceVariant,
                         maxLines = 4,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -146,7 +141,7 @@ fun SeriesDetailScreen(
                         Text(
                             text = String.format(stringResource(R.string.series_season), season),
                             style = JuanPlayerTheme.typography.labelLarge,
-                            color = if (uiState.selectedSeason == season) Primary else OnSurface,
+                            color = if (uiState.selectedSeason == season) JuanPlayerTheme.colors.primary else JuanPlayerTheme.colors.onSurface,
                             modifier = Modifier.padding(horizontal = 12.dp)
                         )
                     }
@@ -164,7 +159,7 @@ fun SeriesDetailScreen(
                 Text(
                     text = stringResource(R.string.series_empty),
                     style = JuanPlayerTheme.typography.bodyLarge,
-                    color = OnSurfaceVariant
+                    color = JuanPlayerTheme.colors.onSurfaceVariant
                 )
             }
         } else {
@@ -209,7 +204,7 @@ private fun EpisodeItem(
             Text(
                 text = String.format("%02d", episode.episodeNum),
                 style = JuanPlayerTheme.typography.titleMedium,
-                color = Primary
+                color = JuanPlayerTheme.colors.primary
             )
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -219,7 +214,7 @@ private fun EpisodeItem(
                 Text(
                     text = episode.title,
                     style = JuanPlayerTheme.typography.bodyMedium,
-                    color = OnSurface,
+                    color = JuanPlayerTheme.colors.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -227,7 +222,7 @@ private fun EpisodeItem(
                     Text(
                         text = episode.duration,
                         style = JuanPlayerTheme.typography.labelSmall,
-                        color = OnSurfaceVariant
+                        color = JuanPlayerTheme.colors.onSurfaceVariant
                     )
                 }
             }
@@ -236,13 +231,13 @@ private fun EpisodeItem(
             if (episode.progress > 0) {
                 Box(
                     modifier = Modifier
-                        .background(Primary.copy(alpha = 0.9f), RoundedCornerShape(4.dp))
+                        .background(JuanPlayerTheme.colors.primary.copy(alpha = 0.9f), RoundedCornerShape(4.dp))
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.series_resume),
                         style = JuanPlayerTheme.typography.labelSmall,
-                        color = OnSurface
+                        color = JuanPlayerTheme.colors.onSurface
                     )
                 }
             }

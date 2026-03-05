@@ -39,4 +39,14 @@ interface FavoriteDao {
 
     @Query("SELECT COUNT(*) FROM favorites f INNER JOIN channels c ON f.channelId = c.id WHERE c.playlistId = :playlistId")
     fun getFavoriteCount(playlistId: Long): Flow<Int>
+
+    @Query("""
+        SELECT f.* FROM favorites f
+        INNER JOIN channels c ON f.channelId = c.id
+        WHERE c.playlistId = :playlistId
+    """)
+    suspend fun getFavoritesByPlaylist(playlistId: Long): List<FavoriteEntity>
+
+    @Query("SELECT * FROM favorites")
+    suspend fun getAllFavorites(): List<FavoriteEntity>
 }

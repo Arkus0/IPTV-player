@@ -37,12 +37,7 @@ import androidx.tv.material3.Text
 import coil.compose.AsyncImage
 import com.neutraltv.player.R
 import com.neutraltv.player.ui.components.LoadingIndicator
-import com.neutraltv.player.ui.theme.FocusBorder
 import com.neutraltv.player.ui.theme.JuanPlayerTheme
-import com.neutraltv.player.ui.theme.OnSurfaceVariant
-import com.neutraltv.player.ui.theme.Primary
-import com.neutraltv.player.ui.theme.Surface as SurfaceColor
-import com.neutraltv.player.ui.theme.SurfaceVariant
 
 @Composable
 fun FavoritesScreen(
@@ -62,7 +57,7 @@ fun FavoritesScreen(
         Text(
             text = stringResource(R.string.favorites_title),
             style = JuanPlayerTheme.typography.headlineLarge,
-            color = Primary
+            color = JuanPlayerTheme.colors.primary
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -75,14 +70,14 @@ fun FavoritesScreen(
                 Text(
                     text = stringResource(R.string.favorites_empty),
                     style = JuanPlayerTheme.typography.bodyLarge,
-                    color = OnSurfaceVariant
+                    color = JuanPlayerTheme.colors.onSurfaceVariant
                 )
             }
             else -> {
                 Text(
                     text = stringResource(R.string.channel_count, uiState.channels.size),
                     style = JuanPlayerTheme.typography.labelMedium,
-                    color = OnSurfaceVariant
+                    color = JuanPlayerTheme.colors.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -124,13 +119,13 @@ private fun FavoriteChannelItem(
             shape = RoundedCornerShape(8.dp)
         ),
         colors = ClickableSurfaceDefaults.colors(
-            containerColor = SurfaceColor,
-            focusedContainerColor = SurfaceVariant,
-            pressedContainerColor = SurfaceVariant
+            containerColor = JuanPlayerTheme.colors.surface,
+            focusedContainerColor = JuanPlayerTheme.colors.surfaceVariant,
+            pressedContainerColor = JuanPlayerTheme.colors.surfaceVariant
         ),
         border = ClickableSurfaceDefaults.border(
             focusedBorder = Border(
-                border = BorderStroke(2.dp, FocusBorder),
+                border = BorderStroke(2.dp, JuanPlayerTheme.colors.focusBorder),
                 shape = RoundedCornerShape(8.dp)
             )
         )
@@ -145,7 +140,7 @@ private fun FavoriteChannelItem(
             Text(
                 text = "\u2605",
                 style = JuanPlayerTheme.typography.titleMedium,
-                color = Primary
+                color = JuanPlayerTheme.colors.primary
             )
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -175,7 +170,7 @@ private fun FavoriteChannelItem(
                     Text(
                         text = groupTitle,
                         style = JuanPlayerTheme.typography.labelMedium,
-                        color = OnSurfaceVariant,
+                        color = JuanPlayerTheme.colors.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )

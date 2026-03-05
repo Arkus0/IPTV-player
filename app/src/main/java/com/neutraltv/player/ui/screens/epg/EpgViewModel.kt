@@ -37,6 +37,8 @@ class EpgViewModel @Inject constructor(
     val uiState: StateFlow<EpgUiState> = _uiState
 
     private var programsJob: Job? = null
+    private var currentPlaylistId: Long? = null
+    private var currentEpgUrl: String? = null
 
     init {
         viewModelScope.launch {
@@ -53,6 +55,9 @@ class EpgViewModel @Inject constructor(
     }
 
     private fun loadChannelsAndPrograms(playlistId: Long, epgUrl: String?) {
+        currentPlaylistId = playlistId
+        currentEpgUrl = epgUrl
+
         val now = System.currentTimeMillis()
         val hourMs = 3600_000L
         val windowStart = now - hourMs     // 1 hour before
@@ -112,5 +117,26 @@ class EpgViewModel @Inject constructor(
 
     fun onProgramFocused(program: ProgramEntity?) {
         _uiState.value = _uiState.value.copy(focusedProgram = program)
+    }
+
+    fun forceRefreshEpg() {
+        val playlistId = currentPlaylistId ?: return
+        val epgUrl = currentEpgUrl ?: return
+
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoadingEpg = true)
+            val result = epgRepository.forceRefreshEpg(playlistId, epgUrl)
+            result.fold(
+                onSuccess = {
+                    _uiState.value = _uiState.value.copy(isLoadingEpg = false)
+                },
+                onFailure = { e ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoadingEpg = false,
+                        epgLoadError = e.message
+                    )
+                }
+            )
+        }
     }
 }

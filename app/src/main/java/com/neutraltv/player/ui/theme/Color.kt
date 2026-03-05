@@ -85,16 +85,3 @@ fun getThemeColors(themeId: String): AppColors = when (themeId) {
     else -> PurpleDarkColors
 }
 
-// Backwards-compatible top-level vals (default theme)
-val Background = PurpleDarkColors.background
-val Surface = PurpleDarkColors.surface
-val SurfaceVariant = PurpleDarkColors.surfaceVariant
-val Primary = PurpleDarkColors.primary
-val PrimaryVariant = PurpleDarkColors.primaryVariant
-val Secondary = PurpleDarkColors.secondary
-val OnBackground = PurpleDarkColors.onBackground
-val OnSurface = PurpleDarkColors.onSurface
-val OnSurfaceVariant = PurpleDarkColors.onSurfaceVariant
-val OnPrimary = PurpleDarkColors.onPrimary
-val Error = PurpleDarkColors.error
-val FocusBorder = PurpleDarkColors.focusBorder

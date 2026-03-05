@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">JuanPlayer Mobile</string>
+    <string name="tab_remote">Remote</string>
+    <string name="tab_channels">Channels</string>
+    <string name="tab_favorites">Favorites</string>
+    <string name="tab_settings">Settings</string>
+    <string name="discover_title">Find TV</string>
+    <string name="discover_scanning">Scanning for devices on the network…</string>
+    <string name="discover_no_devices">No devices found</string>
+    <string name="discover_connect">Connect</string>
+    <string name="remote_title">Remote Control</string>
+    <string name="remote_not_connected">Not connected to TV</string>
+    <string name="remote_connected_to">Connected to %s</string>
+    <string name="remote_now_playing">Now playing: %s</string>
+    <string name="transfer_to_tv">Send to TV</string>
+    <string name="transfer_to_mobile">Bring to Mobile</string>
+    <string name="transfer_sending">Sending to TV…</string>
+    <string name="transfer_receiving">Receiving from TV…</string>
+    <string name="transfer_switch_mode">Switch Mode</string>
+    <string name="channels_title">Channels</string>
+    <string name="channels_no_playlist">Connect to TV to see channels</string>
+    <string name="favorites_title">Favorites</string>
+    <string name="favorites_empty">You have no favorites</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_connection">TV Connection</string>
+    <string name="settings_disconnect">Disconnect</string>
+    <string name="player_send_to_tv">Send to TV</string>
+    <string name="connection_reconnecting">Reconnecting… (attempt %d)</string>
+    <string name="connection_disconnected">Disconnected</string>
+    <string name="connection_retry">Retry connection</string>
+</resources>

@@ -15,8 +15,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.tv.material3.Text
 import com.neutraltv.player.ui.theme.JuanPlayerTheme
-import com.neutraltv.player.ui.theme.OnSurfaceVariant
-import com.neutraltv.player.ui.theme.Primary
 import kotlinx.coroutines.delay
 
 @Composable
@@ -46,13 +44,13 @@ fun SplashScreen(
         Text(
             text = "JuanPlayer",
             style = JuanPlayerTheme.typography.headlineLarge,
-            color = Primary
+            color = JuanPlayerTheme.colors.primary
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "Tu reproductor IPTV",
             style = JuanPlayerTheme.typography.bodyMedium,
-            color = OnSurfaceVariant
+            color = JuanPlayerTheme.colors.onSurfaceVariant
         )
     }
 }

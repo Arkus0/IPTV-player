@@ -20,6 +20,8 @@ import javax.inject.Inject
 
 data class RemoteUiState(
     val isConnected: Boolean = false,
+    val isReconnecting: Boolean = false,
+    val reconnectAttempt: Int = 0,
     val tvDeviceName: String = "",
     val currentPlayback: PlaybackStateDto? = null,
     val showTransferOverlay: Boolean = false,
@@ -38,12 +40,19 @@ class RemoteViewModel @Inject constructor(
     val uiState: StateFlow<RemoteUiState> = _uiState
 
     init {
-        // Observe connection state
+        // Observe connection state and reconnect attempts
         viewModelScope.launch {
             tvWebSocketClient.connectionState.collect { state ->
                 _uiState.value = _uiState.value.copy(
-                    isConnected = state == ConnectionState.CONNECTED
+                    isConnected = state == ConnectionState.CONNECTED,
+                    isReconnecting = state == ConnectionState.RECONNECTING
                 )
+            }
+        }
+
+        viewModelScope.launch {
+            tvWebSocketClient.reconnectAttempt.collect { attempt ->
+                _uiState.value = _uiState.value.copy(reconnectAttempt = attempt)
             }
         }
 
@@ -133,4 +142,8 @@ class RemoteViewModel @Inject constructor(
     }
 
     fun getTransferredState(): PlaybackStateDto? = _uiState.value.transferredState
+
+    fun reconnect() {
+        tvWebSocketClient.reconnect()
+    }
 }

@@ -26,4 +26,7 @@
     <string name="settings_connection">Conexión TV</string>
     <string name="settings_disconnect">Desconectar</string>
     <string name="player_send_to_tv">Enviar a TV</string>
+    <string name="connection_reconnecting">Reconectando… (intento %d)</string>
+    <string name="connection_disconnected">Desconectado</string>
+    <string name="connection_retry">Reintentar conexion</string>
 </resources>

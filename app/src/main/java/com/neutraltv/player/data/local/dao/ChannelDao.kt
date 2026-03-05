@@ -28,6 +28,9 @@ interface ChannelDao {
     @Query("SELECT * FROM channels WHERE playlistId = :playlistId AND isHidden = 0 AND channelType = 'live' AND (groupTitle = :group OR (:group IS NULL AND groupTitle IS NULL)) ORDER BY position ASC")
     fun getChannelsByGroup(playlistId: Long, group: String?): Flow<List<ChannelEntity>>
 
+    @Query("SELECT * FROM channels WHERE playlistId = :playlistId")
+    suspend fun getAllByPlaylistId(playlistId: Long): List<ChannelEntity>
+
     @Query("DELETE FROM channels WHERE playlistId = :playlistId")
     suspend fun deleteByPlaylistId(playlistId: Long)
 
@@ -73,4 +76,64 @@ interface ChannelDao {
 
     @Query("UPDATE channels SET vodProgress = :progress WHERE id = :channelId")
     suspend fun updateVodProgress(channelId: Long, progress: Long)
+
+    // Channel visibility toggle
+    @Query("UPDATE channels SET isHidden = NOT isHidden WHERE id = :channelId")
+    suspend fun toggleHidden(channelId: Long)
+
+    // All channels (including hidden) - for "show hidden" mode
+    @Query("SELECT * FROM channels WHERE playlistId = :playlistId AND channelType = 'live' ORDER BY position ASC")
+    fun getAllChannelsFlow(playlistId: Long): Flow<List<ChannelEntity>>
+
+    @Query("SELECT * FROM channels WHERE playlistId = :playlistId AND channelType = 'live' AND (groupTitle = :group OR (:group IS NULL AND groupTitle IS NULL)) ORDER BY position ASC")
+    fun getAllChannelsByGroup(playlistId: Long, group: String?): Flow<List<ChannelEntity>>
+
+    @Query("""
+        SELECT * FROM channels
+        WHERE playlistId = :playlistId AND channelType = 'live'
+        AND (name LIKE '%' || :query || '%' OR groupTitle LIKE '%' || :query || '%')
+        ORDER BY position ASC
+    """)
+    fun searchAllChannels(playlistId: Long, query: String): Flow<List<ChannelEntity>>
+
+    // Smart Home recommendation queries
+
+    @Query("""
+        SELECT groupTitle, COUNT(*) as watchCount FROM channels
+        WHERE playlistId = :playlistId AND lastWatchedAt IS NOT NULL
+          AND isHidden = 0 AND channelType = 'live' AND groupTitle IS NOT NULL
+        GROUP BY groupTitle ORDER BY watchCount DESC LIMIT :limit
+    """)
+    suspend fun getWatchedGroupStats(playlistId: Long, limit: Int = 10): List<GroupWatchStat>
+
+    @Query("""
+        SELECT * FROM channels
+        WHERE playlistId = :playlistId AND isHidden = 0 AND channelType = 'live'
+          AND epgChannelId IS NOT NULL AND groupTitle IN (:groupTitles)
+        ORDER BY position ASC
+    """)
+    suspend fun getChannelsByGroupsWithEpg(playlistId: Long, groupTitles: List<String>): List<ChannelEntity>
+
+    @Query("""
+        SELECT * FROM channels
+        WHERE playlistId = :playlistId AND isHidden = 0 AND channelType = 'live'
+          AND epgChannelId IS NOT NULL
+        ORDER BY position ASC
+    """)
+    suspend fun getChannelsWithEpg(playlistId: Long): List<ChannelEntity>
+
+    @Query("SELECT * FROM channels WHERE playlistId = :playlistId AND streamUrl = :streamUrl LIMIT 1")
+    suspend fun getByStreamUrl(playlistId: Long, streamUrl: String): ChannelEntity?
+
+    // Watch history queries
+    @Query("SELECT * FROM channels WHERE playlistId = :playlistId AND lastWatchedAt IS NOT NULL ORDER BY lastWatchedAt DESC")
+    fun getWatchHistory(playlistId: Long): Flow<List<ChannelEntity>>
+
+    @Query("UPDATE channels SET lastWatchedAt = NULL WHERE playlistId = :playlistId")
+    suspend fun clearWatchHistory(playlistId: Long)
 }
+
+data class GroupWatchStat(
+    val groupTitle: String,
+    val watchCount: Int
+)

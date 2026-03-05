@@ -6,12 +6,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.lifecycleScope
 import com.neutraltv.player.data.preferences.PreferencesRepository
 import com.neutraltv.player.data.preferences.UserPreferences
 import com.neutraltv.player.server.CompanionServerService
 import com.neutraltv.player.ui.navigation.AppNavigation
 import com.neutraltv.player.ui.theme.JuanPlayerTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -20,11 +23,23 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var preferencesRepository: PreferencesRepository
 
+    private var companionRunning = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Start companion server for mobile remote control
-        startCompanionServer()
+        // Observe companion mode preference and start/stop service accordingly
+        lifecycleScope.launch {
+            preferencesRepository.getUserPreferences()
+                .distinctUntilChangedBy { it.companionModeEnabled }
+                .collect { prefs ->
+                    if (prefs.companionModeEnabled) {
+                        startCompanionServer()
+                    } else {
+                        stopCompanionServer()
+                    }
+                }
+        }
 
         setContent {
             val preferences by preferencesRepository.getUserPreferences()
@@ -40,12 +55,22 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
-        stopService(Intent(this, CompanionServerService::class.java))
+        stopCompanionServer()
         super.onDestroy()
     }
 
     private fun startCompanionServer() {
-        val intent = Intent(this, CompanionServerService::class.java)
-        startForegroundService(intent)
+        if (!companionRunning) {
+            val intent = Intent(this, CompanionServerService::class.java)
+            startForegroundService(intent)
+            companionRunning = true
+        }
+    }
+
+    private fun stopCompanionServer() {
+        if (companionRunning) {
+            stopService(Intent(this, CompanionServerService::class.java))
+            companionRunning = false
+        }
     }
 }

@@ -13,8 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import com.neutraltv.player.ui.theme.JuanPlayerTheme
-import com.neutraltv.player.ui.theme.OnSurfaceVariant
-import com.neutraltv.player.ui.theme.Primary
 
 @Composable
 fun LoadingIndicator(
@@ -28,14 +26,14 @@ fun LoadingIndicator(
     ) {
         CircularProgressIndicator(
             modifier = Modifier.size(48.dp),
-            color = Primary,
+            color = JuanPlayerTheme.colors.primary,
             strokeWidth = 4.dp
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = message,
             style = JuanPlayerTheme.typography.bodyMedium,
-            color = OnSurfaceVariant
+            color = JuanPlayerTheme.colors.onSurfaceVariant
         )
     }
 }

@@ -38,10 +38,6 @@ import com.neutraltv.player.data.local.entity.SeriesEntity
 import com.neutraltv.player.ui.components.FocusableCard
 import com.neutraltv.player.ui.components.LoadingIndicator
 import com.neutraltv.player.ui.theme.JuanPlayerTheme
-import com.neutraltv.player.ui.theme.OnSurface
-import com.neutraltv.player.ui.theme.OnSurfaceVariant
-import com.neutraltv.player.ui.theme.Primary
-import com.neutraltv.player.ui.theme.SurfaceVariant
 
 @Composable
 fun SeriesScreen(
@@ -67,7 +63,7 @@ fun SeriesScreen(
             Text(
                 text = stringResource(R.string.series_title),
                 style = JuanPlayerTheme.typography.headlineLarge,
-                color = Primary
+                color = JuanPlayerTheme.colors.primary
             )
 
             FocusableCard(
@@ -77,7 +73,7 @@ fun SeriesScreen(
                 Text(
                     text = if (uiState.isSearchActive) "\u2716" else "\uD83D\uDD0D",
                     style = JuanPlayerTheme.typography.titleMedium,
-                    color = OnSurface
+                    color = JuanPlayerTheme.colors.onSurface
                 )
             }
         }
@@ -91,15 +87,15 @@ fun SeriesScreen(
                 onValueChange = { viewModel.onSearchQueryChanged(it) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(SurfaceVariant, RoundedCornerShape(8.dp))
+                    .background(JuanPlayerTheme.colors.surfaceVariant, RoundedCornerShape(8.dp))
                     .padding(horizontal = 16.dp, vertical = 12.dp),
-                textStyle = JuanPlayerTheme.typography.bodyMedium.copy(color = OnSurface),
+                textStyle = JuanPlayerTheme.typography.bodyMedium.copy(color = JuanPlayerTheme.colors.onSurface),
                 decorationBox = { innerTextField ->
                     if (uiState.searchQuery.isEmpty()) {
                         Text(
                             text = stringResource(R.string.series_search_hint),
                             style = JuanPlayerTheme.typography.bodyMedium,
-                            color = OnSurfaceVariant
+                            color = JuanPlayerTheme.colors.onSurfaceVariant
                         )
                     }
                     innerTextField()
@@ -143,7 +139,7 @@ fun SeriesScreen(
                 Text(
                     text = stringResource(R.string.series_empty),
                     style = JuanPlayerTheme.typography.bodyLarge,
-                    color = OnSurfaceVariant
+                    color = JuanPlayerTheme.colors.onSurfaceVariant
                 )
             }
         } else {
@@ -191,7 +187,7 @@ private fun CategoryChip(
         Text(
             text = label,
             style = JuanPlayerTheme.typography.labelLarge,
-            color = if (isSelected) Primary else OnSurface,
+            color = if (isSelected) JuanPlayerTheme.colors.primary else JuanPlayerTheme.colors.onSurface,
             modifier = Modifier.padding(horizontal = 8.dp)
         )
     }
@@ -202,7 +198,7 @@ private fun SeriesItem(
     series: SeriesEntity,
     onClick: () -> Unit
 ) {
-    val desc = series.name + (series.categoryName?.let { ", categoría: $it" } ?: "")
+    val desc = series.name + (series.categoryName?.let { ", categor\u00eda: $it" } ?: "")
     FocusableCard(
         onClick = onClick,
         modifier = Modifier.semantics { contentDescription = desc }
@@ -213,7 +209,7 @@ private fun SeriesItem(
                     .fillMaxWidth()
                     .aspectRatio(2f / 3f)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(SurfaceVariant)
+                    .background(JuanPlayerTheme.colors.surfaceVariant)
             ) {
                 if (series.cover != null) {
                     AsyncImage(
@@ -229,13 +225,13 @@ private fun SeriesItem(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(6.dp)
-                            .background(Primary.copy(alpha = 0.9f), RoundedCornerShape(4.dp))
+                            .background(JuanPlayerTheme.colors.primary.copy(alpha = 0.9f), RoundedCornerShape(4.dp))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
                             text = series.rating,
                             style = JuanPlayerTheme.typography.labelSmall,
-                            color = OnSurface
+                            color = JuanPlayerTheme.colors.onSurface
                         )
                     }
                 }
@@ -246,7 +242,7 @@ private fun SeriesItem(
             Text(
                 text = series.name,
                 style = JuanPlayerTheme.typography.bodyMedium,
-                color = OnSurface,
+                color = JuanPlayerTheme.colors.onSurface,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -255,7 +251,7 @@ private fun SeriesItem(
                 Text(
                     text = series.categoryName,
                     style = JuanPlayerTheme.typography.labelSmall,
-                    color = OnSurfaceVariant,
+                    color = JuanPlayerTheme.colors.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )

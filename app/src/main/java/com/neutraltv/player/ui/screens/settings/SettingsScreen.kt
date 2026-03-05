@@ -1,6 +1,9 @@
 package com.neutraltv.player.ui.screens.settings
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -46,19 +49,11 @@ import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import com.neutraltv.player.R
 import com.neutraltv.player.ui.theme.BlueDarkColors
-import com.neutraltv.player.ui.theme.Error
-import com.neutraltv.player.ui.theme.FocusBorder
 import com.neutraltv.player.ui.theme.AppColors
 import com.neutraltv.player.ui.theme.JuanPlayerTheme
 import com.neutraltv.player.ui.theme.LightColors
 import com.neutraltv.player.ui.theme.OledBlackColors
-import com.neutraltv.player.ui.theme.OnSurface
-import com.neutraltv.player.ui.theme.OnSurfaceVariant
-import com.neutraltv.player.ui.theme.Primary
 import com.neutraltv.player.ui.theme.PurpleDarkColors
-import com.neutraltv.player.ui.theme.Surface as SurfaceColor
-import com.neutraltv.player.ui.theme.SurfaceVariant
-import com.neutraltv.player.ui.theme.Background
 import kotlinx.coroutines.launch
 
 @Composable
@@ -73,6 +68,46 @@ fun SettingsScreen(
     var showDeleteConfirm by remember { mutableStateOf(false) }
     val settingsState by viewModel.settingsState.collectAsState()
 
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        uri?.let {
+            scope.launch {
+                try {
+                    val json = viewModel.exportBackup()
+                    context.contentResolver.openOutputStream(it)?.use { outputStream ->
+                        outputStream.write(json.toByteArray())
+                    }
+                    Toast.makeText(context, context.getString(R.string.settings_export_success), Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Toast.makeText(context, context.getString(R.string.settings_import_error), Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let {
+            scope.launch {
+                try {
+                    val json = context.contentResolver.openInputStream(it)?.use { inputStream ->
+                        inputStream.bufferedReader().readText()
+                    } ?: return@launch
+                    val result = viewModel.importBackup(json)
+                    if (result.isSuccess) {
+                        Toast.makeText(context, context.getString(R.string.settings_import_success), Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, context.getString(R.string.settings_import_error), Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(context, context.getString(R.string.settings_import_error), Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
     BackHandler { onBack() }
 
     Column(
@@ -84,7 +119,7 @@ fun SettingsScreen(
         Text(
             text = stringResource(R.string.settings),
             style = JuanPlayerTheme.typography.headlineLarge,
-            color = Primary
+            color = JuanPlayerTheme.colors.primary
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -93,7 +128,7 @@ fun SettingsScreen(
         Text(
             text = stringResource(R.string.settings_theme),
             style = JuanPlayerTheme.typography.titleMedium,
-            color = OnSurface
+            color = JuanPlayerTheme.colors.onSurface
         )
         Spacer(modifier = Modifier.height(12.dp))
         Row(
@@ -135,7 +170,7 @@ fun SettingsScreen(
         Text(
             text = stringResource(R.string.settings_font_size),
             style = JuanPlayerTheme.typography.titleMedium,
-            color = OnSurface
+            color = JuanPlayerTheme.colors.onSurface
         )
         Spacer(modifier = Modifier.height(12.dp))
         Row(
@@ -167,13 +202,13 @@ fun SettingsScreen(
         Text(
             text = stringResource(R.string.settings_epg_url),
             style = JuanPlayerTheme.typography.titleMedium,
-            color = OnSurface
+            color = JuanPlayerTheme.colors.onSurface
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = stringResource(R.string.settings_epg_url_desc),
             style = JuanPlayerTheme.typography.labelMedium,
-            color = OnSurfaceVariant
+            color = JuanPlayerTheme.colors.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -191,12 +226,12 @@ fun SettingsScreen(
                 label = {
                     Text(
                         text = stringResource(R.string.settings_epg_url_hint),
-                        color = OnSurfaceVariant
+                        color = JuanPlayerTheme.colors.onSurfaceVariant
                     )
                 },
                 modifier = Modifier.weight(1f),
                 singleLine = true,
-                textStyle = JuanPlayerTheme.typography.bodyMedium.copy(color = OnSurface),
+                textStyle = JuanPlayerTheme.typography.bodyMedium.copy(color = JuanPlayerTheme.colors.onSurface),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Uri,
                     imeAction = ImeAction.Done
@@ -205,23 +240,23 @@ fun SettingsScreen(
                     onDone = { viewModel.saveCustomEpgUrl(epgUrlText) }
                 ),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = FocusBorder,
-                    unfocusedBorderColor = OnSurfaceVariant,
-                    cursorColor = Primary,
-                    focusedLabelColor = FocusBorder,
-                    unfocusedLabelColor = OnSurfaceVariant,
-                    focusedContainerColor = Background,
-                    unfocusedContainerColor = Background
+                    focusedBorderColor = JuanPlayerTheme.colors.focusBorder,
+                    unfocusedBorderColor = JuanPlayerTheme.colors.onSurfaceVariant,
+                    cursorColor = JuanPlayerTheme.colors.primary,
+                    focusedLabelColor = JuanPlayerTheme.colors.focusBorder,
+                    unfocusedLabelColor = JuanPlayerTheme.colors.onSurfaceVariant,
+                    focusedContainerColor = JuanPlayerTheme.colors.background,
+                    unfocusedContainerColor = JuanPlayerTheme.colors.background
                 ),
                 shape = RoundedCornerShape(8.dp)
             )
             Button(
                 onClick = { viewModel.saveCustomEpgUrl(epgUrlText) },
                 colors = ButtonDefaults.colors(
-                    containerColor = Primary,
-                    contentColor = Background,
-                    focusedContainerColor = FocusBorder,
-                    focusedContentColor = Background
+                    containerColor = JuanPlayerTheme.colors.primary,
+                    contentColor = JuanPlayerTheme.colors.background,
+                    focusedContainerColor = JuanPlayerTheme.colors.focusBorder,
+                    focusedContentColor = JuanPlayerTheme.colors.background
                 )
             ) {
                 Text(
@@ -233,6 +268,78 @@ fun SettingsScreen(
         }
 
         Spacer(modifier = Modifier.height(24.dp))
+
+        // Companion mode toggle
+        Text(
+            text = stringResource(R.string.settings_companion_mode),
+            style = JuanPlayerTheme.typography.titleMedium,
+            color = JuanPlayerTheme.colors.onSurface
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = stringResource(R.string.settings_companion_mode_desc),
+            style = JuanPlayerTheme.typography.labelMedium,
+            color = JuanPlayerTheme.colors.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            val isEnabled = settingsState.companionModeEnabled
+            Surface(
+                onClick = { viewModel.toggleCompanionMode() },
+                shape = ClickableSurfaceDefaults.shape(
+                    shape = RoundedCornerShape(8.dp)
+                ),
+                colors = ClickableSurfaceDefaults.colors(
+                    containerColor = if (isEnabled) JuanPlayerTheme.colors.primary.copy(alpha = 0.15f) else JuanPlayerTheme.colors.surface,
+                    focusedContainerColor = JuanPlayerTheme.colors.surfaceVariant,
+                    pressedContainerColor = JuanPlayerTheme.colors.surfaceVariant
+                ),
+                border = ClickableSurfaceDefaults.border(
+                    border = if (isEnabled) Border(
+                        border = BorderStroke(2.dp, JuanPlayerTheme.colors.primary),
+                        shape = RoundedCornerShape(8.dp)
+                    ) else Border.None,
+                    focusedBorder = Border(
+                        border = BorderStroke(2.dp, JuanPlayerTheme.colors.focusBorder),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                )
+            ) {
+                Text(
+                    text = if (isEnabled) stringResource(R.string.settings_companion_enabled)
+                           else stringResource(R.string.settings_companion_disabled),
+                    style = JuanPlayerTheme.typography.labelLarge,
+                    color = if (isEnabled) JuanPlayerTheme.colors.primary else JuanPlayerTheme.colors.onSurface,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Export configuration
+        SettingsItem(
+            title = stringResource(R.string.settings_export),
+            subtitle = stringResource(R.string.settings_export_desc),
+            onClick = {
+                exportLauncher.launch("juanplayer_backup.json")
+            }
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Import configuration
+        SettingsItem(
+            title = stringResource(R.string.settings_import),
+            subtitle = stringResource(R.string.settings_import_desc),
+            onClick = {
+                importLauncher.launch(arrayOf("application/json"))
+            }
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Manage playlists
         SettingsItem(
@@ -276,7 +383,7 @@ fun SettingsScreen(
         Text(
             text = stringResource(R.string.settings_version, "1.0.0"),
             style = JuanPlayerTheme.typography.labelMedium,
-            color = OnSurfaceVariant,
+            color = JuanPlayerTheme.colors.onSurfaceVariant,
             modifier = Modifier.padding(start = 16.dp)
         )
 
@@ -289,9 +396,9 @@ fun SettingsScreen(
                     shape = RoundedCornerShape(12.dp)
                 ),
                 colors = ClickableSurfaceDefaults.colors(
-                    containerColor = SurfaceVariant,
-                    focusedContainerColor = SurfaceVariant,
-                    pressedContainerColor = SurfaceVariant
+                    containerColor = JuanPlayerTheme.colors.surfaceVariant,
+                    focusedContainerColor = JuanPlayerTheme.colors.surfaceVariant,
+                    pressedContainerColor = JuanPlayerTheme.colors.surfaceVariant
                 )
             ) {
                 Column(
@@ -300,7 +407,7 @@ fun SettingsScreen(
                     Text(
                         text = stringResource(R.string.settings_delete_confirm),
                         style = JuanPlayerTheme.typography.bodyLarge,
-                        color = OnSurface
+                        color = JuanPlayerTheme.colors.onSurface
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Row(
@@ -310,10 +417,10 @@ fun SettingsScreen(
                         Button(
                             onClick = { showDeleteConfirm = false },
                             colors = ButtonDefaults.colors(
-                                containerColor = SurfaceColor,
-                                contentColor = OnSurface,
-                                focusedContainerColor = FocusBorder,
-                                focusedContentColor = Background
+                                containerColor = JuanPlayerTheme.colors.surface,
+                                contentColor = JuanPlayerTheme.colors.onSurface,
+                                focusedContainerColor = JuanPlayerTheme.colors.focusBorder,
+                                focusedContentColor = JuanPlayerTheme.colors.background
                             )
                         ) {
                             Text(
@@ -332,10 +439,10 @@ fun SettingsScreen(
                                 }
                             },
                             colors = ButtonDefaults.colors(
-                                containerColor = Error,
-                                contentColor = OnSurface,
-                                focusedContainerColor = Error.copy(alpha = 0.8f),
-                                focusedContentColor = OnSurface
+                                containerColor = JuanPlayerTheme.colors.error,
+                                contentColor = JuanPlayerTheme.colors.onSurface,
+                                focusedContainerColor = JuanPlayerTheme.colors.error.copy(alpha = 0.8f),
+                                focusedContentColor = JuanPlayerTheme.colors.onSurface
                             )
                         ) {
                             Text(
@@ -364,13 +471,13 @@ private fun SettingsItem(
             shape = RoundedCornerShape(8.dp)
         ),
         colors = ClickableSurfaceDefaults.colors(
-            containerColor = SurfaceColor,
-            focusedContainerColor = SurfaceVariant,
-            pressedContainerColor = SurfaceVariant
+            containerColor = JuanPlayerTheme.colors.surface,
+            focusedContainerColor = JuanPlayerTheme.colors.surfaceVariant,
+            pressedContainerColor = JuanPlayerTheme.colors.surfaceVariant
         ),
         border = ClickableSurfaceDefaults.border(
             focusedBorder = Border(
-                border = BorderStroke(2.dp, FocusBorder),
+                border = BorderStroke(2.dp, JuanPlayerTheme.colors.focusBorder),
                 shape = RoundedCornerShape(8.dp)
             )
         )
@@ -381,14 +488,14 @@ private fun SettingsItem(
             Text(
                 text = title,
                 style = JuanPlayerTheme.typography.bodyLarge,
-                color = OnSurface
+                color = JuanPlayerTheme.colors.onSurface
             )
             if (subtitle != null) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = subtitle,
                     style = JuanPlayerTheme.typography.labelMedium,
-                    color = OnSurfaceVariant
+                    color = JuanPlayerTheme.colors.onSurfaceVariant
                 )
             }
         }
@@ -409,17 +516,17 @@ private fun ThemeCard(
             shape = RoundedCornerShape(12.dp)
         ),
         colors = ClickableSurfaceDefaults.colors(
-            containerColor = SurfaceColor,
-            focusedContainerColor = SurfaceVariant,
-            pressedContainerColor = SurfaceVariant
+            containerColor = JuanPlayerTheme.colors.surface,
+            focusedContainerColor = JuanPlayerTheme.colors.surfaceVariant,
+            pressedContainerColor = JuanPlayerTheme.colors.surfaceVariant
         ),
         border = ClickableSurfaceDefaults.border(
             border = if (isSelected) Border(
-                border = BorderStroke(3.dp, Primary),
+                border = BorderStroke(3.dp, JuanPlayerTheme.colors.primary),
                 shape = RoundedCornerShape(12.dp)
             ) else Border.None,
             focusedBorder = Border(
-                border = BorderStroke(3.dp, FocusBorder),
+                border = BorderStroke(3.dp, JuanPlayerTheme.colors.focusBorder),
                 shape = RoundedCornerShape(12.dp)
             )
         )
@@ -453,7 +560,7 @@ private fun ThemeCard(
             Text(
                 text = label,
                 style = JuanPlayerTheme.typography.labelMedium,
-                color = if (isSelected) Primary else OnSurfaceVariant
+                color = if (isSelected) JuanPlayerTheme.colors.primary else JuanPlayerTheme.colors.onSurfaceVariant
             )
         }
     }
@@ -472,17 +579,17 @@ private fun FontScaleOption(
             shape = RoundedCornerShape(8.dp)
         ),
         colors = ClickableSurfaceDefaults.colors(
-            containerColor = if (isSelected) Primary.copy(alpha = 0.15f) else SurfaceColor,
-            focusedContainerColor = SurfaceVariant,
-            pressedContainerColor = SurfaceVariant
+            containerColor = if (isSelected) JuanPlayerTheme.colors.primary.copy(alpha = 0.15f) else JuanPlayerTheme.colors.surface,
+            focusedContainerColor = JuanPlayerTheme.colors.surfaceVariant,
+            pressedContainerColor = JuanPlayerTheme.colors.surfaceVariant
         ),
         border = ClickableSurfaceDefaults.border(
             border = if (isSelected) Border(
-                border = BorderStroke(2.dp, Primary),
+                border = BorderStroke(2.dp, JuanPlayerTheme.colors.primary),
                 shape = RoundedCornerShape(8.dp)
             ) else Border.None,
             focusedBorder = Border(
-                border = BorderStroke(2.dp, FocusBorder),
+                border = BorderStroke(2.dp, JuanPlayerTheme.colors.focusBorder),
                 shape = RoundedCornerShape(8.dp)
             )
         )
@@ -490,7 +597,7 @@ private fun FontScaleOption(
         Text(
             text = label,
             style = JuanPlayerTheme.typography.labelLarge,
-            color = if (isSelected) Primary else OnSurface,
+            color = if (isSelected) JuanPlayerTheme.colors.primary else JuanPlayerTheme.colors.onSurface,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
         )
     }

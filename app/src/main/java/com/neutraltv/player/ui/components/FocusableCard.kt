@@ -18,8 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Border
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.Surface
-import com.neutraltv.player.ui.theme.FocusBorder
-import com.neutraltv.player.ui.theme.Surface as SurfaceColor
+import com.neutraltv.player.ui.theme.JuanPlayerTheme
 
 @Composable
 fun FocusableCard(
@@ -42,13 +41,13 @@ fun FocusableCard(
             shape = RoundedCornerShape(12.dp)
         ),
         colors = ClickableSurfaceDefaults.colors(
-            containerColor = SurfaceColor,
-            focusedContainerColor = SurfaceColor,
-            pressedContainerColor = SurfaceColor
+            containerColor = JuanPlayerTheme.colors.surface,
+            focusedContainerColor = JuanPlayerTheme.colors.surface,
+            pressedContainerColor = JuanPlayerTheme.colors.surface
         ),
         border = ClickableSurfaceDefaults.border(
             focusedBorder = Border(
-                border = BorderStroke(3.dp, FocusBorder),
+                border = BorderStroke(3.dp, JuanPlayerTheme.colors.focusBorder),
                 shape = RoundedCornerShape(12.dp)
             )
         )

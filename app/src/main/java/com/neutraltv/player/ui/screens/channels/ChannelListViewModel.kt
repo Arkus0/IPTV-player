@@ -25,7 +25,8 @@ data class ChannelListUiState(
     val isLoading: Boolean = true,
     val playlistId: Long? = null,
     val searchQuery: String = "",
-    val isSearchActive: Boolean = false
+    val isSearchActive: Boolean = false,
+    val showHiddenChannels: Boolean = false
 )
 
 @HiltViewModel
@@ -84,7 +85,13 @@ class ChannelListViewModel @Inject constructor(
     private fun loadChannelsForGroup(playlistId: Long, group: String?) {
         channelsJob?.cancel()
         channelsJob = viewModelScope.launch {
-            repository.getChannelsByGroup(playlistId, group).collect { channels ->
+            val showAll = _uiState.value.showHiddenChannels
+            val flow = if (showAll) {
+                repository.getAllChannelsByGroup(playlistId, group)
+            } else {
+                repository.getChannelsByGroup(playlistId, group)
+            }
+            flow.collect { channels ->
                 _uiState.value = _uiState.value.copy(
                     channels = channels,
                     isLoading = false
@@ -123,7 +130,13 @@ class ChannelListViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(selectedGroup = null, isLoading = true)
         channelsJob?.cancel()
         channelsJob = viewModelScope.launch {
-            repository.getVisibleChannels(playlistId).collect { channels ->
+            val showAll = _uiState.value.showHiddenChannels
+            val flow = if (showAll) {
+                repository.getAllChannelsFlow(playlistId)
+            } else {
+                repository.getVisibleChannels(playlistId)
+            }
+            flow.collect { channels ->
                 _uiState.value = _uiState.value.copy(
                     channels = channels,
                     selectedGroup = null,
@@ -151,7 +164,13 @@ class ChannelListViewModel @Inject constructor(
             } else {
                 channelsJob?.cancel()
                 channelsJob = viewModelScope.launch {
-                    repository.getVisibleChannels(playlistId).collect { channels ->
+                    val showAll = _uiState.value.showHiddenChannels
+                    val flow = if (showAll) {
+                        repository.getAllChannelsFlow(playlistId)
+                    } else {
+                        repository.getVisibleChannels(playlistId)
+                    }
+                    flow.collect { channels ->
                         _uiState.value = _uiState.value.copy(channels = channels, isLoading = false)
                         observeCurrentPrograms(channels)
                     }
@@ -169,14 +188,61 @@ class ChannelListViewModel @Inject constructor(
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             delay(300L) // debounce
+            val showAll = _uiState.value.showHiddenChannels
             if (query.isBlank()) {
                 // Show all channels when query is empty
-                repository.getVisibleChannels(playlistId).collect { channels ->
+                val flow = if (showAll) {
+                    repository.getAllChannelsFlow(playlistId)
+                } else {
+                    repository.getVisibleChannels(playlistId)
+                }
+                flow.collect { channels ->
                     _uiState.value = _uiState.value.copy(channels = channels, isLoading = false)
                     observeCurrentPrograms(channels)
                 }
             } else {
-                repository.searchChannels(playlistId, query).collect { channels ->
+                val flow = if (showAll) {
+                    repository.searchAllChannels(playlistId, query)
+                } else {
+                    repository.searchChannels(playlistId, query)
+                }
+                flow.collect { channels ->
+                    _uiState.value = _uiState.value.copy(channels = channels, isLoading = false)
+                    observeCurrentPrograms(channels)
+                }
+            }
+        }
+    }
+
+    fun toggleShowHidden() {
+        val current = _uiState.value
+        val newShowHidden = !current.showHiddenChannels
+        _uiState.value = current.copy(showHiddenChannels = newShowHidden, isLoading = true)
+        reloadCurrentChannels()
+    }
+
+    fun toggleChannelHidden(channelId: Long) {
+        viewModelScope.launch {
+            repository.toggleChannelHidden(channelId)
+        }
+    }
+
+    private fun reloadCurrentChannels() {
+        val state = _uiState.value
+        val playlistId = state.playlistId ?: return
+        if (state.isSearchActive && state.searchQuery.isNotBlank()) {
+            onSearchQueryChanged(state.searchQuery)
+        } else if (state.selectedGroup != null) {
+            loadChannelsForGroup(playlistId, state.selectedGroup)
+        } else {
+            channelsJob?.cancel()
+            channelsJob = viewModelScope.launch {
+                val flow = if (state.showHiddenChannels) {
+                    repository.getAllChannelsFlow(playlistId)
+                } else {
+                    repository.getVisibleChannels(playlistId)
+                }
+                flow.collect { channels ->
                     _uiState.value = _uiState.value.copy(channels = channels, isLoading = false)
                     observeCurrentPrograms(channels)
                 }

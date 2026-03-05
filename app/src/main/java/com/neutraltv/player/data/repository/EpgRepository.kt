@@ -3,9 +3,11 @@ package com.neutraltv.player.data.repository
 import com.neutraltv.player.data.local.dao.ProgramDao
 import com.neutraltv.player.data.local.entity.ProgramEntity
 import com.neutraltv.player.data.parser.XmltvParser
+import com.neutraltv.player.data.preferences.PreferencesRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -20,12 +22,25 @@ import javax.inject.Singleton
 class EpgRepository @Inject constructor(
     private val programDao: ProgramDao,
     private val xmltvParser: XmltvParser,
+    private val preferencesRepository: PreferencesRepository,
     @Named("epg") private val epgClient: OkHttpClient
 ) {
 
-    suspend fun loadEpg(playlistId: Long, epgUrl: String): Result<Int> {
+    suspend fun loadEpg(playlistId: Long, epgUrl: String, forceRefresh: Boolean = false): Result<Int> {
         return withContext(Dispatchers.IO) {
             try {
+                // Check TTL cache unless force refresh is requested
+                if (!forceRefresh) {
+                    val lastFetched = preferencesRepository.getEpgLastFetched().first()
+                    val ttlMinutes = preferencesRepository.getEpgTtlMinutes().first()
+                    val ttlMs = ttlMinutes * 60 * 1000L
+                    val now = System.currentTimeMillis()
+                    if (lastFetched > 0 && (now - lastFetched) < ttlMs) {
+                        // Cache is still valid, skip download
+                        return@withContext Result.success(0)
+                    }
+                }
+
                 val request = Request.Builder().url(epgUrl).build()
                 val response = epgClient.newCall(request).execute()
 
@@ -67,11 +82,21 @@ class EpgRepository @Inject constructor(
                     totalCount += entities.size
                 }
 
+                // Update last-fetched timestamp on successful download
+                preferencesRepository.setEpgLastFetched(System.currentTimeMillis())
+
                 Result.success(totalCount)
             } catch (e: Exception) {
                 Result.failure(e)
             }
         }
+    }
+
+    /**
+     * Force re-downloads EPG data regardless of TTL cache.
+     */
+    suspend fun forceRefreshEpg(playlistId: Long, epgUrl: String): Result<Int> {
+        return loadEpg(playlistId, epgUrl, forceRefresh = true)
     }
 
     fun getCurrentProgram(epgChannelId: String): Flow<ProgramEntity?> {

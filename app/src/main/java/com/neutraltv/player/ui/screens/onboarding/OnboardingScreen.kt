@@ -39,14 +39,7 @@ import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
 import com.neutraltv.player.R
 import com.neutraltv.player.ui.components.LoadingIndicator
-import com.neutraltv.player.ui.theme.Background
-import com.neutraltv.player.ui.theme.Error
-import com.neutraltv.player.ui.theme.FocusBorder
 import com.neutraltv.player.ui.theme.JuanPlayerTheme
-import com.neutraltv.player.ui.theme.OnSurface
-import com.neutraltv.player.ui.theme.OnSurfaceVariant
-import com.neutraltv.player.ui.theme.Primary
-import com.neutraltv.player.ui.theme.Surface
 
 @Composable
 fun OnboardingScreen(
@@ -104,10 +97,10 @@ fun OnboardingScreen(
                 Button(
                     onClick = { onBack() },
                     colors = ButtonDefaults.colors(
-                        containerColor = Surface,
-                        contentColor = OnSurface,
-                        focusedContainerColor = FocusBorder,
-                        focusedContentColor = Background
+                        containerColor = JuanPlayerTheme.colors.surface,
+                        contentColor = JuanPlayerTheme.colors.onSurface,
+                        focusedContainerColor = JuanPlayerTheme.colors.focusBorder,
+                        focusedContentColor = JuanPlayerTheme.colors.background
                     )
                 ) {
                     Text(
@@ -124,7 +117,7 @@ fun OnboardingScreen(
         Text(
             text = if (showBackButton) stringResource(R.string.add_playlist_title) else stringResource(R.string.onboarding_title),
             style = JuanPlayerTheme.typography.headlineMedium,
-            color = Primary
+            color = JuanPlayerTheme.colors.primary
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -137,7 +130,7 @@ fun OnboardingScreen(
                 stringResource(R.string.onboarding_subtitle)
             },
             style = JuanPlayerTheme.typography.bodyMedium,
-            color = OnSurfaceVariant
+            color = JuanPlayerTheme.colors.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -150,10 +143,10 @@ fun OnboardingScreen(
             Button(
                 onClick = { viewModel.setXtreamMode(false) },
                 colors = ButtonDefaults.colors(
-                    containerColor = if (!uiState.isXtreamMode) Primary else Surface,
-                    contentColor = if (!uiState.isXtreamMode) Background else OnSurface,
-                    focusedContainerColor = FocusBorder,
-                    focusedContentColor = Background
+                    containerColor = if (!uiState.isXtreamMode) JuanPlayerTheme.colors.primary else JuanPlayerTheme.colors.surface,
+                    contentColor = if (!uiState.isXtreamMode) JuanPlayerTheme.colors.background else JuanPlayerTheme.colors.onSurface,
+                    focusedContainerColor = JuanPlayerTheme.colors.focusBorder,
+                    focusedContentColor = JuanPlayerTheme.colors.background
                 )
             ) {
                 Text(
@@ -168,10 +161,10 @@ fun OnboardingScreen(
             Button(
                 onClick = { viewModel.setXtreamMode(true) },
                 colors = ButtonDefaults.colors(
-                    containerColor = if (uiState.isXtreamMode) Primary else Surface,
-                    contentColor = if (uiState.isXtreamMode) Background else OnSurface,
-                    focusedContainerColor = FocusBorder,
-                    focusedContentColor = Background
+                    containerColor = if (uiState.isXtreamMode) JuanPlayerTheme.colors.primary else JuanPlayerTheme.colors.surface,
+                    contentColor = if (uiState.isXtreamMode) JuanPlayerTheme.colors.background else JuanPlayerTheme.colors.onSurface,
+                    focusedContainerColor = JuanPlayerTheme.colors.focusBorder,
+                    focusedContentColor = JuanPlayerTheme.colors.background
                 )
             ) {
                 Text(
@@ -191,24 +184,24 @@ fun OnboardingScreen(
             label = {
                 Text(
                     text = stringResource(R.string.playlist_name_hint),
-                    color = OnSurfaceVariant
+                    color = JuanPlayerTheme.colors.onSurfaceVariant
                 )
             },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            textStyle = JuanPlayerTheme.typography.bodyLarge.copy(color = OnSurface),
+            textStyle = JuanPlayerTheme.typography.bodyLarge.copy(color = JuanPlayerTheme.colors.onSurface),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Next
             ),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = FocusBorder,
-                unfocusedBorderColor = OnSurfaceVariant,
-                cursorColor = Primary,
-                focusedLabelColor = FocusBorder,
-                unfocusedLabelColor = OnSurfaceVariant,
-                focusedContainerColor = Background,
-                unfocusedContainerColor = Background
+                focusedBorderColor = JuanPlayerTheme.colors.focusBorder,
+                unfocusedBorderColor = JuanPlayerTheme.colors.onSurfaceVariant,
+                cursorColor = JuanPlayerTheme.colors.primary,
+                focusedLabelColor = JuanPlayerTheme.colors.focusBorder,
+                unfocusedLabelColor = JuanPlayerTheme.colors.onSurfaceVariant,
+                focusedContainerColor = JuanPlayerTheme.colors.background,
+                unfocusedContainerColor = JuanPlayerTheme.colors.background
             ),
             shape = RoundedCornerShape(8.dp)
         )
@@ -223,12 +216,12 @@ fun OnboardingScreen(
                 label = {
                     Text(
                         text = stringResource(R.string.onboarding_url_hint),
-                        color = OnSurfaceVariant
+                        color = JuanPlayerTheme.colors.onSurfaceVariant
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                textStyle = JuanPlayerTheme.typography.bodyLarge.copy(color = OnSurface),
+                textStyle = JuanPlayerTheme.typography.bodyLarge.copy(color = JuanPlayerTheme.colors.onSurface),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Uri,
                     imeAction = ImeAction.Done
@@ -237,13 +230,13 @@ fun OnboardingScreen(
                     onDone = { viewModel.loadPlaylist() }
                 ),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = FocusBorder,
-                    unfocusedBorderColor = OnSurfaceVariant,
-                    cursorColor = Primary,
-                    focusedLabelColor = FocusBorder,
-                    unfocusedLabelColor = OnSurfaceVariant,
-                    focusedContainerColor = Background,
-                    unfocusedContainerColor = Background
+                    focusedBorderColor = JuanPlayerTheme.colors.focusBorder,
+                    unfocusedBorderColor = JuanPlayerTheme.colors.onSurfaceVariant,
+                    cursorColor = JuanPlayerTheme.colors.primary,
+                    focusedLabelColor = JuanPlayerTheme.colors.focusBorder,
+                    unfocusedLabelColor = JuanPlayerTheme.colors.onSurfaceVariant,
+                    focusedContainerColor = JuanPlayerTheme.colors.background,
+                    unfocusedContainerColor = JuanPlayerTheme.colors.background
                 ),
                 shape = RoundedCornerShape(8.dp),
                 isError = uiState.error != null
@@ -254,7 +247,7 @@ fun OnboardingScreen(
                 Text(
                     text = uiState.error!!,
                     style = JuanPlayerTheme.typography.labelMedium,
-                    color = Error
+                    color = JuanPlayerTheme.colors.error
                 )
             }
 
@@ -267,10 +260,10 @@ fun OnboardingScreen(
                 Button(
                     onClick = { viewModel.loadPlaylist() },
                     colors = ButtonDefaults.colors(
-                        containerColor = Primary,
-                        contentColor = Background,
-                        focusedContainerColor = FocusBorder,
-                        focusedContentColor = Background
+                        containerColor = JuanPlayerTheme.colors.primary,
+                        contentColor = JuanPlayerTheme.colors.background,
+                        focusedContainerColor = JuanPlayerTheme.colors.focusBorder,
+                        focusedContentColor = JuanPlayerTheme.colors.background
                     )
                 ) {
                     Text(
@@ -291,10 +284,10 @@ fun OnboardingScreen(
                         filePickerLauncher.launch(intent)
                     },
                     colors = ButtonDefaults.colors(
-                        containerColor = Surface,
-                        contentColor = OnSurface,
-                        focusedContainerColor = FocusBorder,
-                        focusedContentColor = Background
+                        containerColor = JuanPlayerTheme.colors.surface,
+                        contentColor = JuanPlayerTheme.colors.onSurface,
+                        focusedContainerColor = JuanPlayerTheme.colors.focusBorder,
+                        focusedContentColor = JuanPlayerTheme.colors.background
                     )
                 ) {
                     Text(
@@ -312,24 +305,24 @@ fun OnboardingScreen(
                 label = {
                     Text(
                         text = stringResource(R.string.xtream_server_url_hint),
-                        color = OnSurfaceVariant
+                        color = JuanPlayerTheme.colors.onSurfaceVariant
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                textStyle = JuanPlayerTheme.typography.bodyLarge.copy(color = OnSurface),
+                textStyle = JuanPlayerTheme.typography.bodyLarge.copy(color = JuanPlayerTheme.colors.onSurface),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Uri,
                     imeAction = ImeAction.Next
                 ),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = FocusBorder,
-                    unfocusedBorderColor = OnSurfaceVariant,
-                    cursorColor = Primary,
-                    focusedLabelColor = FocusBorder,
-                    unfocusedLabelColor = OnSurfaceVariant,
-                    focusedContainerColor = Background,
-                    unfocusedContainerColor = Background
+                    focusedBorderColor = JuanPlayerTheme.colors.focusBorder,
+                    unfocusedBorderColor = JuanPlayerTheme.colors.onSurfaceVariant,
+                    cursorColor = JuanPlayerTheme.colors.primary,
+                    focusedLabelColor = JuanPlayerTheme.colors.focusBorder,
+                    unfocusedLabelColor = JuanPlayerTheme.colors.onSurfaceVariant,
+                    focusedContainerColor = JuanPlayerTheme.colors.background,
+                    unfocusedContainerColor = JuanPlayerTheme.colors.background
                 ),
                 shape = RoundedCornerShape(8.dp)
             )
@@ -342,24 +335,24 @@ fun OnboardingScreen(
                 label = {
                     Text(
                         text = stringResource(R.string.xtream_username),
-                        color = OnSurfaceVariant
+                        color = JuanPlayerTheme.colors.onSurfaceVariant
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                textStyle = JuanPlayerTheme.typography.bodyLarge.copy(color = OnSurface),
+                textStyle = JuanPlayerTheme.typography.bodyLarge.copy(color = JuanPlayerTheme.colors.onSurface),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Next
                 ),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = FocusBorder,
-                    unfocusedBorderColor = OnSurfaceVariant,
-                    cursorColor = Primary,
-                    focusedLabelColor = FocusBorder,
-                    unfocusedLabelColor = OnSurfaceVariant,
-                    focusedContainerColor = Background,
-                    unfocusedContainerColor = Background
+                    focusedBorderColor = JuanPlayerTheme.colors.focusBorder,
+                    unfocusedBorderColor = JuanPlayerTheme.colors.onSurfaceVariant,
+                    cursorColor = JuanPlayerTheme.colors.primary,
+                    focusedLabelColor = JuanPlayerTheme.colors.focusBorder,
+                    unfocusedLabelColor = JuanPlayerTheme.colors.onSurfaceVariant,
+                    focusedContainerColor = JuanPlayerTheme.colors.background,
+                    unfocusedContainerColor = JuanPlayerTheme.colors.background
                 ),
                 shape = RoundedCornerShape(8.dp)
             )
@@ -372,12 +365,12 @@ fun OnboardingScreen(
                 label = {
                     Text(
                         text = stringResource(R.string.xtream_password),
-                        color = OnSurfaceVariant
+                        color = JuanPlayerTheme.colors.onSurfaceVariant
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                textStyle = JuanPlayerTheme.typography.bodyLarge.copy(color = OnSurface),
+                textStyle = JuanPlayerTheme.typography.bodyLarge.copy(color = JuanPlayerTheme.colors.onSurface),
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
@@ -387,13 +380,13 @@ fun OnboardingScreen(
                     onDone = { viewModel.connectXtream() }
                 ),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = FocusBorder,
-                    unfocusedBorderColor = OnSurfaceVariant,
-                    cursorColor = Primary,
-                    focusedLabelColor = FocusBorder,
-                    unfocusedLabelColor = OnSurfaceVariant,
-                    focusedContainerColor = Background,
-                    unfocusedContainerColor = Background
+                    focusedBorderColor = JuanPlayerTheme.colors.focusBorder,
+                    unfocusedBorderColor = JuanPlayerTheme.colors.onSurfaceVariant,
+                    cursorColor = JuanPlayerTheme.colors.primary,
+                    focusedLabelColor = JuanPlayerTheme.colors.focusBorder,
+                    unfocusedLabelColor = JuanPlayerTheme.colors.onSurfaceVariant,
+                    focusedContainerColor = JuanPlayerTheme.colors.background,
+                    unfocusedContainerColor = JuanPlayerTheme.colors.background
                 ),
                 shape = RoundedCornerShape(8.dp),
                 isError = uiState.error != null
@@ -404,7 +397,7 @@ fun OnboardingScreen(
                 Text(
                     text = uiState.error!!,
                     style = JuanPlayerTheme.typography.labelMedium,
-                    color = Error
+                    color = JuanPlayerTheme.colors.error
                 )
             }
 
@@ -417,10 +410,10 @@ fun OnboardingScreen(
                 Button(
                     onClick = { viewModel.connectXtream() },
                     colors = ButtonDefaults.colors(
-                        containerColor = Primary,
-                        contentColor = Background,
-                        focusedContainerColor = FocusBorder,
-                        focusedContentColor = Background
+                        containerColor = JuanPlayerTheme.colors.primary,
+                        contentColor = JuanPlayerTheme.colors.background,
+                        focusedContainerColor = JuanPlayerTheme.colors.focusBorder,
+                        focusedContentColor = JuanPlayerTheme.colors.background
                     )
                 ) {
                     Text(
