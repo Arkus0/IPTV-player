@@ -33,6 +33,9 @@ interface PlaylistDao {
     @Query("SELECT * FROM playlists ORDER BY createdAt DESC")
     fun getAll(): Flow<List<PlaylistEntity>>
 
+    @Query("SELECT * FROM playlists ORDER BY createdAt DESC")
+    suspend fun getAllOnce(): List<PlaylistEntity>
+
     @Query("UPDATE playlists SET isActive = 0")
     suspend fun deactivateAll()
 
