@@ -13,6 +13,7 @@ object ApiRoutes {
     const val PLAYBACK = "$BASE/playback"
     const val PLAYBACK_COMMAND = "$BASE/playback/command"
     const val TRANSFER = "$BASE/playback/transfer"
+    const val ADD_PLAYLIST = "$BASE/playlists/add"
     const val WS = "/ws"
 
     const val NSD_SERVICE_TYPE = "_juanplayer._tcp."

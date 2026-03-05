@@ -83,6 +83,11 @@ class TvApiClient @Inject constructor(
         return post<Map<String, String>>(ApiRoutes.PLAYBACK_COMMAND, json).map { }
     }
 
+    suspend fun addPlaylist(url: String, name: String): Result<PlaylistDto> {
+        val json = gson.toJson(mapOf("url" to url, "name" to name))
+        return post(ApiRoutes.ADD_PLAYLIST, json)
+    }
+
     suspend fun requestTransfer(request: TransferRequest): Result<PlaybackStateDto?> =
         withContext(Dispatchers.IO) {
             runCatching {

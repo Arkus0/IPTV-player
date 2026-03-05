@@ -44,6 +44,7 @@ class CompanionServer @Inject constructor(
     private val channelDao: ChannelDao,
     private val favoriteDao: FavoriteDao,
     private val favoriteRepository: FavoriteRepository,
+    private val playlistRepository: com.neutraltv.player.data.repository.PlaylistRepository,
     private val playbackBridge: PlaybackBridge
 ) {
 
@@ -80,6 +81,36 @@ class CompanionServer @Inject constructor(
                 get(ApiRoutes.PLAYLISTS) {
                     val playlists = playlistDao.getAllOnce()
                     call.respond(playlists.map { it.toDto() })
+                }
+
+                // Add playlist from URL (mobile paste feature)
+                post(ApiRoutes.ADD_PLAYLIST) {
+                    try {
+                        val body = call.receive<Map<String, String>>()
+                        val url = body["url"]
+                        val name = body["name"] ?: "Playlist"
+
+                        if (url.isNullOrBlank()) {
+                            call.respond(HttpStatusCode.BadRequest, mapOf("error" to "url is required"))
+                            return@post
+                        }
+
+                        val result = playlistRepository.loadPlaylistFromUrl(name, url)
+                        result.onSuccess { playlist ->
+                            call.respond(HttpStatusCode.Created, playlist.toDto())
+                        }.onFailure { e ->
+                            call.respond(
+                                HttpStatusCode.UnprocessableEntity,
+                                mapOf("error" to (e.message ?: "Failed to load playlist"))
+                            )
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error adding playlist", e)
+                        call.respond(
+                            HttpStatusCode.InternalServerError,
+                            mapOf("error" to (e.message ?: "Internal error"))
+                        )
+                    }
                 }
 
                 // Channels
