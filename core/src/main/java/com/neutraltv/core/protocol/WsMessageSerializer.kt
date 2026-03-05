@@ -8,7 +8,8 @@ import com.neutraltv.core.model.SyncFavorites
 
 object WsMessageSerializer {
 
-    private val gson = Gson()
+    @PublishedApi
+    internal val gson = Gson()
 
     fun serialize(message: WsMessage): String = gson.toJson(message)
 

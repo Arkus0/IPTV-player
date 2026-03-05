@@ -76,9 +76,6 @@ fun EpgScreen(
             uiState.isLoading -> {
                 LoadingIndicator(message = stringResource(R.string.loading))
             }
-            uiState.isLoadingEpg -> {
-                LoadingIndicator(message = stringResource(R.string.epg_loading))
-            }
             uiState.channels.isEmpty() -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -92,6 +89,14 @@ fun EpgScreen(
                 }
             }
             else -> {
+                if (uiState.isLoadingEpg) {
+                    Text(
+                        text = stringResource(R.string.epg_loading),
+                        style = JuanPlayerTheme.typography.labelMedium,
+                        color = OnSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
                 EpgGrid(
                     channels = uiState.channels,
                     programs = uiState.programs,

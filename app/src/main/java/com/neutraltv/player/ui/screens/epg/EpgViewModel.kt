@@ -8,6 +8,7 @@ import com.neutraltv.player.data.preferences.PreferencesRepository
 import com.neutraltv.player.data.repository.EpgRepository
 import com.neutraltv.player.data.repository.PlaylistRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -34,6 +35,8 @@ class EpgViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(EpgUiState())
     val uiState: StateFlow<EpgUiState> = _uiState
+
+    private var programsJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -69,19 +72,22 @@ class EpgViewModel @Inject constructor(
                 isLoading = false
             )
 
-            // Load EPG from network if available and no programs exist
-            if (epgUrl != null) {
-                loadEpgData(playlistId, epgUrl)
-            }
-
-            // Load programs for visible channels
+            // Start observing programs reactively FIRST — Room Flow will re-emit on inserts
             val epgChannelIds = channels.mapNotNull { it.epgChannelId }
             if (epgChannelIds.isNotEmpty()) {
-                epgRepository.getProgramsForChannelsInRange(epgChannelIds, windowStart, windowEnd)
-                    .collect { allPrograms ->
-                        val grouped = allPrograms.groupBy { it.epgChannelId }
-                        _uiState.value = _uiState.value.copy(programs = grouped)
-                    }
+                programsJob?.cancel()
+                programsJob = viewModelScope.launch {
+                    epgRepository.getProgramsForChannelsInRange(epgChannelIds, windowStart, windowEnd)
+                        .collect { allPrograms ->
+                            val grouped = allPrograms.groupBy { it.epgChannelId }
+                            _uiState.value = _uiState.value.copy(programs = grouped)
+                        }
+                }
+            }
+
+            // THEN trigger EPG network fetch — when data is inserted, the Flow above will re-emit
+            if (epgUrl != null) {
+                loadEpgData(playlistId, epgUrl)
             }
         }
     }

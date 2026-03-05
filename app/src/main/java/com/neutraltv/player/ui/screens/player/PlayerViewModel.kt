@@ -193,7 +193,10 @@ class PlayerViewModel @Inject constructor(
             val epgChannelId = channel.epgChannelId ?: return@launch
             val existing = epgRepository.getCurrentProgramOnce(epgChannelId)
             if (existing == null) {
-                epgRepository.loadEpg(playlistId, epgUrl)
+                val result = epgRepository.loadEpg(playlistId, epgUrl)
+                result.onFailure { e ->
+                    android.util.Log.w("PlayerViewModel", "EPG fetch failed: ${e.message}")
+                }
             }
         }
     }

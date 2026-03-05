@@ -38,7 +38,7 @@ interface ProgramDao {
         AND endTime > :startTime AND startTime < :endTime
         ORDER BY startTime ASC
     """)
-    suspend fun getProgramsInRange(epgChannelId: String, startTime: Long, endTime: Long): List<ProgramEntity>
+    fun getProgramsInRangeFlow(epgChannelId: String, startTime: Long, endTime: Long): Flow<List<ProgramEntity>>
 
     @Query("""
         SELECT * FROM programs
@@ -46,15 +46,23 @@ interface ProgramDao {
         AND endTime > :startTime AND startTime < :endTime
         ORDER BY epgChannelId, startTime ASC
     """)
-    suspend fun getProgramsForChannelsInRange(
+    fun getProgramsForChannelsInRangeFlow(
         epgChannelIds: List<String>,
         startTime: Long,
         endTime: Long
-    ): List<ProgramEntity>
+    ): Flow<List<ProgramEntity>>
+
     @Query("""
         SELECT * FROM programs
         WHERE epgChannelId IN (:epgChannelIds)
         AND startTime <= :currentTime AND endTime > :currentTime
     """)
     suspend fun getCurrentProgramsForChannels(epgChannelIds: List<String>, currentTime: Long): List<ProgramEntity>
+
+    @Query("""
+        SELECT * FROM programs
+        WHERE epgChannelId IN (:epgChannelIds)
+        AND startTime <= :currentTime AND endTime > :currentTime
+    """)
+    fun getCurrentProgramsForChannelsFlow(epgChannelIds: List<String>, currentTime: Long): Flow<List<ProgramEntity>>
 }

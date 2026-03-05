@@ -5,7 +5,7 @@ import com.neutraltv.player.data.local.entity.ProgramEntity
 import com.neutraltv.player.data.parser.XmltvParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -36,14 +36,12 @@ class EpgRepository @Inject constructor(
                     Exception("Empty response")
                 )
 
-                // Clear existing programs for this playlist
-                programDao.deleteByPlaylistId(playlistId)
-
                 val isGzipped = epgUrl.endsWith(".gz", ignoreCase = true) ||
                     response.header("Content-Encoding")?.equals("gzip", ignoreCase = true) == true
 
                 var totalCount = 0
                 val inputStream = body.byteStream()
+                var firstBatch = true
 
                 xmltvParser.parse(inputStream, isGzipped).forEach { batch ->
                     val entities = batch.map { program ->
@@ -56,6 +54,11 @@ class EpgRepository @Inject constructor(
                             category = program.category,
                             playlistId = playlistId
                         )
+                    }
+                    // Delete old data only after first batch is parsed successfully
+                    if (firstBatch) {
+                        programDao.deleteByPlaylistId(playlistId)
+                        firstBatch = false
                     }
                     programDao.insertAll(entities)
                     totalCount += entities.size
@@ -85,15 +88,22 @@ class EpgRepository @Inject constructor(
         return programs.associate { it.epgChannelId to it.title }
     }
 
-    fun getProgramsInRange(epgChannelId: String, startTime: Long, endTime: Long): Flow<List<ProgramEntity>> = flow {
-        emit(programDao.getProgramsInRange(epgChannelId, startTime, endTime))
+    fun getCurrentProgramsMapFlow(epgChannelIds: List<String>): Flow<Map<String, String>> {
+        if (epgChannelIds.isEmpty()) return kotlinx.coroutines.flow.flowOf(emptyMap())
+        val now = System.currentTimeMillis()
+        return programDao.getCurrentProgramsForChannelsFlow(epgChannelIds, now)
+            .map { programs -> programs.associate { it.epgChannelId to it.title } }
+    }
+
+    fun getProgramsInRange(epgChannelId: String, startTime: Long, endTime: Long): Flow<List<ProgramEntity>> {
+        return programDao.getProgramsInRangeFlow(epgChannelId, startTime, endTime)
     }
 
     fun getProgramsForChannelsInRange(
         epgChannelIds: List<String>,
         startTime: Long,
         endTime: Long
-    ): Flow<List<ProgramEntity>> = flow {
-        emit(programDao.getProgramsForChannelsInRange(epgChannelIds, startTime, endTime))
+    ): Flow<List<ProgramEntity>> {
+        return programDao.getProgramsForChannelsInRangeFlow(epgChannelIds, startTime, endTime)
     }
 }

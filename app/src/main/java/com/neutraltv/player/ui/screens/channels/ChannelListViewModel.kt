@@ -40,6 +40,7 @@ class ChannelListViewModel @Inject constructor(
     val uiState: StateFlow<ChannelListUiState> = _uiState
 
     private var searchJob: Job? = null
+    private var epgObserveJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -82,27 +83,26 @@ class ChannelListViewModel @Inject constructor(
                     channels = channels,
                     isLoading = false
                 )
-                loadCurrentPrograms(channels)
+                observeCurrentPrograms(channels)
             }
         }
     }
 
-    private fun loadCurrentPrograms(channels: List<ChannelEntity>) {
-        viewModelScope.launch {
-            val epgIds = channels.mapNotNull { it.epgChannelId }
-            val programs = epgRepository.getCurrentProgramsMap(epgIds)
-            _uiState.value = _uiState.value.copy(currentPrograms = programs)
+    private fun observeCurrentPrograms(channels: List<ChannelEntity>) {
+        epgObserveJob?.cancel()
+        val epgIds = channels.mapNotNull { it.epgChannelId }
+        if (epgIds.isEmpty()) return
+        epgObserveJob = viewModelScope.launch {
+            epgRepository.getCurrentProgramsMapFlow(epgIds).collect { programs ->
+                _uiState.value = _uiState.value.copy(currentPrograms = programs)
+            }
         }
     }
 
     private fun fetchEpgAndRefresh(playlistId: Long, epgUrl: String) {
         viewModelScope.launch {
             epgRepository.loadEpg(playlistId, epgUrl)
-            // After EPG data is fetched, refresh current programs for visible channels
-            val channels = _uiState.value.channels
-            if (channels.isNotEmpty()) {
-                loadCurrentPrograms(channels)
-            }
+            // After EPG fetch, the reactive Flow in observeCurrentPrograms will auto-update
         }
     }
 
@@ -122,7 +122,7 @@ class ChannelListViewModel @Inject constructor(
                     selectedGroup = null,
                     isLoading = false
                 )
-                loadCurrentPrograms(channels)
+                observeCurrentPrograms(channels)
             }
         }
     }
@@ -145,7 +145,7 @@ class ChannelListViewModel @Inject constructor(
                 viewModelScope.launch {
                     repository.getVisibleChannels(playlistId).collect { channels ->
                         _uiState.value = _uiState.value.copy(channels = channels, isLoading = false)
-                        loadCurrentPrograms(channels)
+                        observeCurrentPrograms(channels)
                     }
                 }
             }
@@ -165,12 +165,12 @@ class ChannelListViewModel @Inject constructor(
                 // Show all channels when query is empty
                 repository.getVisibleChannels(playlistId).collect { channels ->
                     _uiState.value = _uiState.value.copy(channels = channels, isLoading = false)
-                    loadCurrentPrograms(channels)
+                    observeCurrentPrograms(channels)
                 }
             } else {
                 repository.searchChannels(playlistId, query).collect { channels ->
                     _uiState.value = _uiState.value.copy(channels = channels, isLoading = false)
-                    loadCurrentPrograms(channels)
+                    observeCurrentPrograms(channels)
                 }
             }
         }
