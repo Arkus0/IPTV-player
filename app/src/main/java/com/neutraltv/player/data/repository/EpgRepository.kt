@@ -4,7 +4,10 @@ import com.neutraltv.player.data.local.dao.ProgramDao
 import com.neutraltv.player.data.local.entity.ProgramEntity
 import com.neutraltv.player.data.parser.XmltvParser
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -72,27 +75,39 @@ class EpgRepository @Inject constructor(
     }
 
     fun getCurrentProgram(epgChannelId: String): Flow<ProgramEntity?> {
-        val now = System.currentTimeMillis()
-        return programDao.getCurrentProgramFlow(epgChannelId, now)
+        return tickerFlow(EPG_REFRESH_INTERVAL_MS).flatMapLatest {
+            programDao.getCurrentProgramFlow(epgChannelId, System.currentTimeMillis())
+        }
     }
 
     suspend fun getCurrentProgramOnce(epgChannelId: String): ProgramEntity? {
-        val now = System.currentTimeMillis()
-        return programDao.getCurrentProgram(epgChannelId, now)
+        return programDao.getCurrentProgram(epgChannelId, System.currentTimeMillis())
     }
 
     suspend fun getCurrentProgramsMap(epgChannelIds: List<String>): Map<String, String> {
         if (epgChannelIds.isEmpty()) return emptyMap()
-        val now = System.currentTimeMillis()
-        val programs = programDao.getCurrentProgramsForChannels(epgChannelIds, now)
+        val programs = programDao.getCurrentProgramsForChannels(epgChannelIds, System.currentTimeMillis())
         return programs.associate { it.epgChannelId to it.title }
     }
 
     fun getCurrentProgramsMapFlow(epgChannelIds: List<String>): Flow<Map<String, String>> {
         if (epgChannelIds.isEmpty()) return kotlinx.coroutines.flow.flowOf(emptyMap())
-        val now = System.currentTimeMillis()
-        return programDao.getCurrentProgramsForChannelsFlow(epgChannelIds, now)
-            .map { programs -> programs.associate { it.epgChannelId to it.title } }
+        return tickerFlow(EPG_REFRESH_INTERVAL_MS).flatMapLatest {
+            programDao.getCurrentProgramsForChannelsFlow(epgChannelIds, System.currentTimeMillis())
+                .map { programs -> programs.associate { it.epgChannelId to it.title } }
+        }
+    }
+
+    private fun tickerFlow(intervalMs: Long): Flow<Unit> = flow {
+        emit(Unit)
+        while (true) {
+            delay(intervalMs)
+            emit(Unit)
+        }
+    }
+
+    companion object {
+        private const val EPG_REFRESH_INTERVAL_MS = 60_000L
     }
 
     fun getProgramsInRange(epgChannelId: String, startTime: Long, endTime: Long): Flow<List<ProgramEntity>> {

@@ -19,7 +19,9 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -131,11 +133,11 @@ class PlayerViewModel @Inject constructor(
             }
         }
 
-        // Publish playback state to companion bridge
+        // Publish playback state to companion bridge (only when playback-relevant fields change)
         viewModelScope.launch {
-            uiState.collect { state ->
-                state.currentChannel?.let { channel ->
-                    playbackBridge.updatePlaybackState(
+            uiState
+                .map { state ->
+                    state.currentChannel?.let { channel ->
                         PlaybackStateDto(
                             channelId = channel.id,
                             channelName = channel.name,
@@ -148,9 +150,14 @@ class PlayerViewModel @Inject constructor(
                             episodeId = state.episodeId,
                             isPlaying = state.isPlaying
                         )
-                    )
+                    }
                 }
-            }
+                .distinctUntilChanged()
+                .collect { playbackState ->
+                    if (playbackState != null) {
+                        playbackBridge.updatePlaybackState(playbackState)
+                    }
+                }
         }
 
         // Track companion connection status

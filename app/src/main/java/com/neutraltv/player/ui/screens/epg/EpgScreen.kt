@@ -3,8 +3,10 @@ package com.neutraltv.player.ui.screens.epg
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,10 +16,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.tv.foundation.lazy.list.TvLazyColumn
+import androidx.tv.foundation.lazy.list.items
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -126,70 +129,65 @@ private fun EpgGrid(
     onProgramFocused: (ProgramEntity?) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val verticalScrollState = rememberScrollState()
     val horizontalScrollState = rememberScrollState()
     val totalHours = (windowEndTime - windowStartTime).toFloat() / 3600_000f
     val totalWidth = (totalHours * DP_PER_HOUR).dp
 
-    Row(modifier = modifier) {
-        // Channel names column (fixed)
-        Column(
-            modifier = Modifier
-                .width(CHANNEL_COLUMN_WIDTH.dp)
-                .verticalScroll(verticalScrollState)
-        ) {
-            // Time header spacer
-            Spacer(modifier = Modifier.height(32.dp))
-
-            channels.forEach { channel ->
-                Box(
-                    modifier = Modifier
-                        .height(56.dp)
-                        .fillMaxWidth()
-                        .padding(vertical = 2.dp)
-                        .background(SurfaceColor, RoundedCornerShape(4.dp))
-                        .padding(horizontal = 8.dp),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    Text(
-                        text = channel.name,
-                        style = JuanPlayerTheme.typography.labelMedium,
-                        color = OnSurface,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+    Column(modifier = modifier) {
+        // Time header row (fixed at top, horizontally scrollable)
+        Row {
+            Spacer(modifier = Modifier.width(CHANNEL_COLUMN_WIDTH.dp))
+            Box(modifier = Modifier.horizontalScroll(horizontalScrollState)) {
+                TimeHeader(
+                    windowStartTime = windowStartTime,
+                    windowEndTime = windowEndTime,
+                    totalWidth = totalWidth
+                )
             }
         }
 
-        // Time grid (scrollable)
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .horizontalScroll(horizontalScrollState)
+        // Virtualized channel + program rows
+        TvLazyColumn(
+            contentPadding = PaddingValues(bottom = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
-            // Time header
-            TimeHeader(
-                windowStartTime = windowStartTime,
-                windowEndTime = windowEndTime,
-                totalWidth = totalWidth
-            )
+            items(
+                items = channels,
+                key = { it.id }
+            ) { channel ->
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    // Channel name (fixed left)
+                    Box(
+                        modifier = Modifier
+                            .width(CHANNEL_COLUMN_WIDTH.dp)
+                            .height(56.dp)
+                            .padding(vertical = 2.dp)
+                            .background(SurfaceColor, RoundedCornerShape(4.dp))
+                            .padding(horizontal = 8.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Text(
+                            text = channel.name,
+                            style = JuanPlayerTheme.typography.labelMedium,
+                            color = OnSurface,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
 
-            // Program rows
-            Column(
-                modifier = Modifier.verticalScroll(verticalScrollState)
-            ) {
-                channels.forEach { channel ->
-                    val channelPrograms = programs[channel.epgChannelId] ?: emptyList()
-                    ProgramRow(
-                        channel = channel,
-                        programs = channelPrograms,
-                        windowStartTime = windowStartTime,
-                        windowEndTime = windowEndTime,
-                        totalWidth = totalWidth,
-                        onChannelSelected = onChannelSelected,
-                        onProgramFocused = onProgramFocused
-                    )
+                    // Program row (horizontally scrollable, synced)
+                    Box(modifier = Modifier.weight(1f).horizontalScroll(horizontalScrollState)) {
+                        val channelPrograms = programs[channel.epgChannelId] ?: emptyList()
+                        ProgramRow(
+                            channel = channel,
+                            programs = channelPrograms,
+                            windowStartTime = windowStartTime,
+                            windowEndTime = windowEndTime,
+                            totalWidth = totalWidth,
+                            onChannelSelected = onChannelSelected,
+                            onProgramFocused = onProgramFocused
+                        )
+                    }
                 }
             }
         }

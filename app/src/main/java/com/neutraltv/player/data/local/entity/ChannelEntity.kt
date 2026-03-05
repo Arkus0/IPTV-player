@@ -15,7 +15,10 @@ import androidx.room.PrimaryKey
             onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index("playlistId")]
+    indices = [
+        Index("playlistId"),
+        Index(value = ["playlistId", "channelType", "isHidden"])
+    ]
 )
 data class ChannelEntity(
     @PrimaryKey(autoGenerate = true)
