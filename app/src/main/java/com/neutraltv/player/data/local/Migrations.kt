@@ -102,3 +102,12 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
         db.execSQL("CREATE INDEX IF NOT EXISTS index_episodes_season ON episodes(season)")
     }
 }
+
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Composite index for EPG time-range queries
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_programs_epgChannelId_startTime_endTime ON programs(epgChannelId, startTime, endTime)")
+        // Composite index for channel list queries
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_channels_playlistId_channelType_isHidden ON channels(playlistId, channelType, isHidden)")
+    }
+}

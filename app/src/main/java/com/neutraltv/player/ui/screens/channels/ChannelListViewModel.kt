@@ -41,6 +41,9 @@ class ChannelListViewModel @Inject constructor(
 
     private var searchJob: Job? = null
     private var epgObserveJob: Job? = null
+    private var channelsJob: Job? = null
+    private var groupsJob: Job? = null
+    private var favoritesJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -61,7 +64,8 @@ class ChannelListViewModel @Inject constructor(
     }
 
     private fun observeFavorites(playlistId: Long) {
-        viewModelScope.launch {
+        favoritesJob?.cancel()
+        favoritesJob = viewModelScope.launch {
             favoriteRepository.getFavoriteIds(playlistId).collect { ids ->
                 _uiState.value = _uiState.value.copy(favoriteIds = ids.toSet())
             }
@@ -69,7 +73,8 @@ class ChannelListViewModel @Inject constructor(
     }
 
     private fun loadGroups(playlistId: Long) {
-        viewModelScope.launch {
+        groupsJob?.cancel()
+        groupsJob = viewModelScope.launch {
             repository.getGroups(playlistId).collect { groups ->
                 _uiState.value = _uiState.value.copy(groups = groups)
             }
@@ -77,7 +82,8 @@ class ChannelListViewModel @Inject constructor(
     }
 
     private fun loadChannelsForGroup(playlistId: Long, group: String?) {
-        viewModelScope.launch {
+        channelsJob?.cancel()
+        channelsJob = viewModelScope.launch {
             repository.getChannelsByGroup(playlistId, group).collect { channels ->
                 _uiState.value = _uiState.value.copy(
                     channels = channels,
@@ -115,7 +121,8 @@ class ChannelListViewModel @Inject constructor(
     fun selectAllChannels() {
         val playlistId = _uiState.value.playlistId ?: return
         _uiState.value = _uiState.value.copy(selectedGroup = null, isLoading = true)
-        viewModelScope.launch {
+        channelsJob?.cancel()
+        channelsJob = viewModelScope.launch {
             repository.getVisibleChannels(playlistId).collect { channels ->
                 _uiState.value = _uiState.value.copy(
                     channels = channels,
@@ -142,7 +149,8 @@ class ChannelListViewModel @Inject constructor(
             if (current.selectedGroup != null) {
                 loadChannelsForGroup(playlistId, current.selectedGroup)
             } else {
-                viewModelScope.launch {
+                channelsJob?.cancel()
+                channelsJob = viewModelScope.launch {
                     repository.getVisibleChannels(playlistId).collect { channels ->
                         _uiState.value = _uiState.value.copy(channels = channels, isLoading = false)
                         observeCurrentPrograms(channels)

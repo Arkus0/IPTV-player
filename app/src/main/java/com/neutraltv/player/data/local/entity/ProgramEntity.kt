@@ -18,7 +18,8 @@ import androidx.room.PrimaryKey
     indices = [
         Index("epgChannelId"),
         Index("playlistId"),
-        Index("startTime")
+        Index("startTime"),
+        Index(value = ["epgChannelId", "startTime", "endTime"])
     ]
 )
 data class ProgramEntity(

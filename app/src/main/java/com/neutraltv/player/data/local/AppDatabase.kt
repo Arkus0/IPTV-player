@@ -24,7 +24,7 @@ import com.neutraltv.player.data.local.entity.SeriesEntity
         SeriesEntity::class,
         EpisodeEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {

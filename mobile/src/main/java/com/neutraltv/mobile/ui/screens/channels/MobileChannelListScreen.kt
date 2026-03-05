@@ -125,7 +125,7 @@ fun MobileChannelListScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(filteredChannels) { channel ->
+                items(filteredChannels, key = { it.id }) { channel ->
                     var showMenu by remember { mutableStateOf(false) }
 
                     Box {

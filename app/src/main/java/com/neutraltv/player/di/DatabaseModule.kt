@@ -6,6 +6,7 @@ import com.neutraltv.player.data.local.AppDatabase
 import com.neutraltv.player.data.local.MIGRATION_1_2
 import com.neutraltv.player.data.local.MIGRATION_2_3
 import com.neutraltv.player.data.local.MIGRATION_3_4
+import com.neutraltv.player.data.local.MIGRATION_4_5
 import com.neutraltv.player.data.local.dao.ChannelDao
 import com.neutraltv.player.data.local.dao.EpisodeDao
 import com.neutraltv.player.data.local.dao.FavoriteDao
@@ -31,7 +32,7 @@ object DatabaseModule {
             AppDatabase::class.java,
             "jotaplayer.db"
         )
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
             .build()
     }
 

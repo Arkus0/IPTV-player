@@ -8,6 +8,7 @@ import com.neutraltv.player.data.repository.FavoriteRepository
 import com.neutraltv.player.data.repository.PlaylistRepository
 import com.neutraltv.player.data.repository.XtreamRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -32,6 +33,9 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState
 
+    private var recentJob: Job? = null
+    private var favoritesJob: Job? = null
+
     init {
         viewModelScope.launch {
             repository.getActivePlaylist().collect { playlist ->
@@ -50,7 +54,8 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun loadRecentChannels(playlistId: Long) {
-        viewModelScope.launch {
+        recentJob?.cancel()
+        recentJob = viewModelScope.launch {
             repository.getRecentlyWatched(playlistId, 5).collect { channels ->
                 _uiState.value = _uiState.value.copy(recentChannels = channels)
             }
@@ -58,7 +63,8 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun loadFavoriteChannels(playlistId: Long) {
-        viewModelScope.launch {
+        favoritesJob?.cancel()
+        favoritesJob = viewModelScope.launch {
             favoriteRepository.getFavoriteChannels(playlistId).collect { channels ->
                 _uiState.value = _uiState.value.copy(favoriteChannels = channels)
             }

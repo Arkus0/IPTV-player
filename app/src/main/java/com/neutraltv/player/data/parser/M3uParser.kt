@@ -17,6 +17,8 @@ data class ParsedChannel(
 
 class M3uParser {
 
+    private val nonAlphanumericRegex = Regex("[^a-z0-9]")
+
     fun parse(content: String): M3uParseResult {
         val lines = content.lines()
         if (lines.isEmpty()) return M3uParseResult(emptyList(), null)
@@ -100,7 +102,7 @@ class M3uParser {
         val effectiveTvgId = tvgId?.takeIf { it.isNotBlank() }
             ?: tvgName?.takeIf { it.isNotBlank() }
             ?: name.takeIf { it != "Unknown" }?.lowercase()
-                ?.replace(Regex("[^a-z0-9]"), "")
+                ?.replace(nonAlphanumericRegex, "")
                 ?.takeIf { it.isNotBlank() }
 
         return ExtInfData(
@@ -112,8 +114,13 @@ class M3uParser {
     }
 
     private fun extractAttribute(line: String, attribute: String): String? {
-        val pattern = """$attribute="([^"]*)"""".toRegex()
-        return pattern.find(line)?.groupValues?.get(1)
+        val key = """$attribute=""""
+        val startIdx = line.indexOf(key)
+        if (startIdx < 0) return null
+        val valueStart = startIdx + key.length
+        val endIdx = line.indexOf('"', valueStart)
+        if (endIdx < 0) return null
+        return line.substring(valueStart, endIdx)
     }
 
     private fun classifyChannel(streamUrl: String, groupTitle: String?): String {

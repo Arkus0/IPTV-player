@@ -32,6 +32,7 @@ class VodViewModel @Inject constructor(
     val uiState: StateFlow<VodUiState> = _uiState
 
     private var searchJob: Job? = null
+    private var vodChannelsJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -53,7 +54,8 @@ class VodViewModel @Inject constructor(
     }
 
     private fun loadAllVod(playlistId: Long) {
-        viewModelScope.launch {
+        vodChannelsJob?.cancel()
+        vodChannelsJob = viewModelScope.launch {
             repository.getVodChannels(playlistId).collect { channels ->
                 _uiState.value = _uiState.value.copy(
                     channels = channels,
@@ -69,7 +71,8 @@ class VodViewModel @Inject constructor(
             selectedGroup = null,
             isLoading = true
         )
-        viewModelScope.launch {
+        vodChannelsJob?.cancel()
+        vodChannelsJob = viewModelScope.launch {
             repository.getVodChannels(_uiState.value.playlistId).collect { channels ->
                 _uiState.value = _uiState.value.copy(
                     channels = channels,
